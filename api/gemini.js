@@ -10,12 +10,11 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Vercel 環境變數 GEMINI_API_KEY 未設定！' });
   }
 
-  // 🕵️‍♂️ 抓出前 10 個字元來核對是不是新 Key
   const keyPrefix = apiKey.substring(0, 10) + '...';
 
   try {
-    // 鎖定最穩定的 1.5-flash 測試版路徑
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // 🚀 使用強大的 Gemini 2.5 Flash 正式版
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -28,9 +27,8 @@ module.exports = async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      // 如果失敗，把正在使用的 Key 前綴印在網頁上
       return res.status(500).json({ 
-        error: `[目前 Vercel 使用的金鑰: ${keyPrefix}] Google 報錯: ${data?.error?.message}` 
+        error: `[金鑰: ${keyPrefix}] Google 報錯: ${data?.error?.message}` 
       });
     }
 
