@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雙子座穿搭顧問</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh; padding: 24px 16px; color: #fff;
+    }
+    #root { max-width: 720px; margin: 0 auto; }
+    .card {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px; padding: 32px; backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .title { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+    .subtitle { text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 14px; margin-bottom: 32px; }
+    .section-label { color: rgba(255, 255, 255, 0.7); font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; }
+    .api-key-input {
+      width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+      color: #fff; font-size: 14px; outline: none; margin-bottom: 24px; font-family: monospace;
+    }
+    .api-key-input:focus { border-color: rgba(167, 139, 250, 0.6); background: rgba(255, 255, 255, 0.1); }
+    .occasion-group { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .occasion-btn {
+      flex: 1; min-width: 100px; padding: 12px 8px; border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6);
+      font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .occasion-btn.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(236, 72, 153, 0.3));
+      border-color: rgba(167, 139, 250, 0.7); color: #fff; font-weight: 600;
+    }
+    .occasion-btn .emoji { display: block; font-size: 22px; margin-bottom: 4px; }
+    .user-textarea {
+      width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+      color: #fff; font-size: 14px; line-height: 1.6; outline: none;
+      resize: vertical; min-height: 130px; margin-bottom: 24px;
+    }
+    .gemini-btn {
+      width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed, #9333ea, #c026d3);
+      border: none; border-radius: 14px; color: #fff; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+    }
+    .gemini-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .loading-area { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(167, 139, 250, 0.2); border-top-color: #a78bfa; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .result-area { margin-top: 28px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 16px; padding: 24px; }
+    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .result-badge { background: linear-gradient(135deg, #7c3aed, #c026d3); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+    .result-content { color: rgba(255, 255, 255, 0.9); font-size: 15px; line-height: 1.8; white-space: pre-wrap; }
+    .error-box { margin-top: 20px; padding: 14px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; color: #fca5a5; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const OCCASIONS = [
+      { id: 'casual', label: '日常休閒', emoji: '👕' },
+      { id: 'formal', label: '正式會議', emoji: '💼' },
+      { id: 'date',   label: '約會晚宴', emoji: '🌹' },
+    ];
+
+    function App() {
+      const [occasion, setOccasion] = useState('casual');
+      const [userInfo, setUserInfo] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [result, setResult] = useState('');
+      const [resultOccasion, setResultOccasion] = useState('');
+      const [error, setError] = useState('');
+
+      const buildPrompt = () => {
+        const occ = OCCASIONS.find(o => o.id === occasion).label;
+        return `你是一位專業時尚穿搭顧問。請針對「${occ}」場合提供建議。
+使用者資料：${userInfo}
+請以繁體中文清楚列出：1.整體風格概述 2.上衣建議 3.下身建議 4.鞋款建議 5.配件搭配 6.造型小技巧。請詳細說明搭配原因，讓造型具備層次感。`;
+      };
+
+      const handleSubmit = async () => {
+        if (!userInfo.trim()) { setError('請填寫您的個人資料！'); return; }
+
+        setLoading(true);
+        setError('');
+        setResult('');
+
+        try {
+          const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: buildPrompt() }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data?.error || `HTTP ${response.status}`);
+          }
+
+          if (!data.text) throw new Error('AI 沒有回傳內容，請稍後再試。');
+
+          setResult(data.text);
+          setResultOccasion(OCCASIONS.find(o => o.id === occasion).label);
+        } catch (err) {
+          setError(`發生錯誤：${err.message}`);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="card">
+          <h1 className="title">✨ 雙子座穿搭顧問</h1>
+          <p className="subtitle">輸入你的資料，讓 Gemini AI 為你量身打造穿搭建議</p>
+
+          <div className="section-label">選擇場合</div>
+          <div className="occasion-group">
+            {OCCASIONS.map(o => (
+              <button key={o.id} className={`occasion-btn${occasion === o.id ? ' active' : ''}`} onClick={() => setOccasion(o.id)}>
+                <span className="emoji">{o.emoji}</span>{o.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="section-label">個人資料</div>
+          <textarea className="user-textarea" value={userInfo} onChange={e => setUserInfo(e.target.value)} placeholder="例如：身高 174.5cm，體重 70kg..." />
+
+          <button className="gemini-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? '⏳ 雙子座正在為你穿搭中...' : '💫 呼叫雙子座自動幫我穿搭'}
+          </button>
+
+          {loading && <div className="loading-area"><div className="spinner" /></div>}
+          {error && <div className="error-box">⚠️ {error}</div>}
+          {result && !loading && (
+            <div className="result-area">
+              <div className="result-header">
+                <span className="result-badge">✦ 穿搭建議</span>
+                <span style={{color: '#aaa', marginLeft: '10px'}}>場合：{resultOccasion}</span>
+              </div>
+              <div className="result-content">{result}</div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
