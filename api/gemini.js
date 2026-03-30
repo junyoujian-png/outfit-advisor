@@ -14,8 +14,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // 呼叫我們測試成功的最強模型 gemini-2.0-flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    // 🚨 關鍵修改：改用最穩定的 gemini-1.5-flash，避開新帳號 2.0 限制
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     const response = await fetch(url, {
       method: 'POST',
