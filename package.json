@@ -1,5 +1,8 @@
 {
-  "name": "outfit-advisor",
+  "name": "gemini-outfit-advisor",
   "version": "1.0.0",
-  "private": true
+  "description": "Vercel deployment for Gemini Outfit Advisor",
+  "scripts": {
+    "start": "node api/gemini.js"
+  }
 }
