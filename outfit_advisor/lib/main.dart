@@ -1,8 +1,24 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'fortune_screen.dart';
 import 'outfit_screen.dart';
 
-void main() => runApp(const OutfitAdvisorApp());
+void main() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('FlutterError: ${details.exceptionAsString()}');
+  };
+
+  runZonedGuarded(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(const OutfitAdvisorApp());
+    },
+    (error, stack) {
+      debugPrint('Uncaught error: $error\n$stack');
+    },
+  );
+}
 
 class OutfitAdvisorApp extends StatelessWidget {
   const OutfitAdvisorApp({super.key});
@@ -20,7 +36,23 @@ class OutfitAdvisorApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFF1A1A2E),
       ),
-      home: const _HomeShell(),
+      home: const _TestPage(),
+    );
+  }
+}
+
+class _TestPage extends StatelessWidget {
+  const _TestPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text(
+          '測試',
+          style: TextStyle(fontSize: 32, color: Colors.white),
+        ),
+      ),
     );
   }
 }
