@@ -13,7 +13,7 @@ class GeminiService {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'prompt': prompt}),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(const Duration(seconds: 60));
     } catch (e) {
       throw Exception('網路連線失敗：$e');
     }
