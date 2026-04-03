@@ -14,7 +14,9 @@
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       min-height: 100vh; padding: 24px 16px; color: #fff;
     }
-    #root { max-width: 720px; margin: 0 auto; }
+    #root { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── Card ── */
     .card {
       background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px; padding: 32px; backdrop-filter: blur(12px);
@@ -23,43 +25,117 @@
     .title { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
     .subtitle { text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 14px; margin-bottom: 32px; }
     .section-label { color: rgba(255, 255, 255, 0.7); font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; }
-    .api-key-input {
-      width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
-      color: #fff; font-size: 14px; outline: none; margin-bottom: 24px; font-family: monospace;
-    }
-    .api-key-input:focus { border-color: rgba(167, 139, 250, 0.6); background: rgba(255, 255, 255, 0.1); }
+
+    /* ── Occasion buttons ── */
     .occasion-group { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
     .occasion-btn {
       flex: 1; min-width: 100px; padding: 12px 8px; border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6);
-      font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center;
+      font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; font-family: inherit;
     }
     .occasion-btn.active {
       background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(236, 72, 153, 0.3));
       border-color: rgba(167, 139, 250, 0.7); color: #fff; font-weight: 600;
     }
     .occasion-btn .emoji { display: block; font-size: 22px; margin-bottom: 4px; }
+
+    /* ── Textarea ── */
     .user-textarea {
       width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
       color: #fff; font-size: 14px; line-height: 1.6; outline: none;
-      resize: vertical; min-height: 130px; margin-bottom: 24px;
+      resize: vertical; min-height: 130px; margin-bottom: 24px; font-family: inherit;
     }
+    .user-textarea::placeholder { color: rgba(255,255,255,0.3); }
+    .user-textarea:focus { border-color: rgba(167, 139, 250, 0.6); background: rgba(255, 255, 255, 0.1); }
+
+    /* ── Main button ── */
     .gemini-btn {
       width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed, #9333ea, #c026d3);
       border: none; border-radius: 14px; color: #fff; font-size: 17px; font-weight: 700;
       cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+      font-family: inherit;
     }
+    .gemini-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139, 92, 246, 0.5); }
     .gemini-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Loading ── */
     .loading-area { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(167, 139, 250, 0.2); border-top-color: #a78bfa; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result ── */
     .result-area { margin-top: 28px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 16px; padding: 24px; }
     .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
     .result-badge { background: linear-gradient(135deg, #7c3aed, #c026d3); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
     .result-content { color: rgba(255, 255, 255, 0.9); font-size: 15px; line-height: 1.8; white-space: pre-wrap; }
+
+    /* ── Error ── */
     .error-box { margin-top: 20px; padding: 14px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; color: #fca5a5; font-size: 14px; }
+
+    /* ── Zodiac grid ── */
+    .zodiac-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 8px; margin-bottom: 24px;
+    }
+    .zodiac-btn {
+      padding: 10px 4px; border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px; background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.6); font-size: 12px; cursor: pointer;
+      transition: all 0.2s; text-align: center; font-family: inherit; line-height: 1.4;
+    }
+    .zodiac-btn .z-emoji { display: block; font-size: 20px; margin-bottom: 3px; }
+    .zodiac-btn:hover { background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.4); color: #fff; }
+    .zodiac-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.3));
+      border-color: rgba(129, 140, 248, 0.7); color: #fff; font-weight: 600;
+    }
+
+    /* ── Fortune button ── */
+    .fortune-btn {
+      width: 100%; padding: 16px; background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7);
+      border: none; border-radius: 14px; color: #fff; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+      font-family: inherit;
+    }
+    .fortune-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99, 102, 241, 0.5); }
+    .fortune-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Fortune result cards ── */
+    .fortune-result { margin-top: 28px; }
+    .fortune-result-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .fortune-badge { background: linear-gradient(135deg, #4f46e5, #a855f7); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+    .fortune-overall {
+      background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(129, 140, 248, 0.25);
+      border-radius: 12px; padding: 16px; margin-bottom: 16px;
+      color: rgba(255,255,255,0.9); font-size: 15px; line-height: 1.7;
+    }
+    .fortune-grid-result {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+    }
+    .fortune-card {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; padding: 14px 12px; text-align: center;
+    }
+    .fortune-card-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .fortune-card-value { font-size: 15px; font-weight: 600; color: #fff; }
+    .fortune-detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .fortune-detail-card {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px; padding: 14px 12px;
+    }
+    .fortune-detail-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .fortune-detail-value { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+    @media (max-width: 480px) {
+      .zodiac-grid { grid-template-columns: repeat(4, 1fr); }
+      .fortune-grid-result { grid-template-columns: repeat(2, 1fr); }
+      .fortune-detail-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -74,7 +150,35 @@
       { id: 'date',   label: '約會晚宴', emoji: '🌹' },
     ];
 
-    function App() {
+    const ZODIACS = [
+      { id: 'aries',       label: '牡羊座', emoji: '♈' },
+      { id: 'taurus',      label: '金牛座', emoji: '♉' },
+      { id: 'gemini',      label: '雙子座', emoji: '♊' },
+      { id: 'cancer',      label: '巨蟹座', emoji: '♋' },
+      { id: 'leo',         label: '獅子座', emoji: '♌' },
+      { id: 'virgo',       label: '處女座', emoji: '♍' },
+      { id: 'libra',       label: '天秤座', emoji: '♎' },
+      { id: 'scorpio',     label: '天蠍座', emoji: '♏' },
+      { id: 'sagittarius', label: '射手座', emoji: '♐' },
+      { id: 'capricorn',   label: '摩羯座', emoji: '♑' },
+      { id: 'aquarius',    label: '水瓶座', emoji: '♒' },
+      { id: 'pisces',      label: '雙魚座', emoji: '♓' },
+    ];
+
+    async function callGemini(prompt) {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+      if (!data.text) throw new Error('AI 沒有回傳內容，請稍後再試。');
+      return data.text;
+    }
+
+    /* ── 穿搭區塊 ── */
+    function OutfitSection() {
       const [occasion, setOccasion] = useState('casual');
       const [userInfo, setUserInfo] = useState('');
       const [loading, setLoading] = useState(false);
@@ -91,27 +195,10 @@
 
       const handleSubmit = async () => {
         if (!userInfo.trim()) { setError('請填寫您的個人資料！'); return; }
-
-        setLoading(true);
-        setError('');
-        setResult('');
-
+        setLoading(true); setError(''); setResult('');
         try {
-          const response = await fetch('/api/gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: buildPrompt() }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data?.error || `HTTP ${response.status}`);
-          }
-
-          if (!data.text) throw new Error('AI 沒有回傳內容，請稍後再試。');
-
-          setResult(data.text);
+          const text = await callGemini(buildPrompt());
+          setResult(text);
           setResultOccasion(OCCASIONS.find(o => o.id === occasion).label);
         } catch (err) {
           setError(`發生錯誤：${err.message}`);
@@ -135,7 +222,8 @@
           </div>
 
           <div className="section-label">個人資料</div>
-          <textarea className="user-textarea" value={userInfo} onChange={e => setUserInfo(e.target.value)} placeholder="例如：身高 174.5cm，體重 70kg..." />
+          <textarea className="user-textarea" value={userInfo} onChange={e => setUserInfo(e.target.value)}
+            placeholder="例如：身高 174.5cm，體重 70kg，喜歡深色系，體型偏瘦..." />
 
           <button className="gemini-btn" onClick={handleSubmit} disabled={loading}>
             {loading ? '⏳ 雙子座正在為你穿搭中...' : '💫 呼叫雙子座自動幫我穿搭'}
@@ -155,6 +243,108 @@
         </div>
       );
     }
+
+    /* ── 星座運勢區塊 ── */
+    function FortuneSection() {
+      const [zodiac, setZodiac] = useState('gemini');
+      const [loading, setLoading] = useState(false);
+      const [fortune, setFortune] = useState(null);
+      const [error, setError] = useState('');
+
+      const buildPrompt = (label) => `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢，並嚴格以下方 JSON 格式回傳，不要加任何多餘文字或 markdown：
+{
+  "overall": "今日運勢總評（2-3句）",
+  "luckyColor": "幸運色",
+  "luckyNumber": "幸運數字",
+  "love": "愛情運（1-2句）",
+  "career": "事業運（1-2句）",
+  "health": "健康運（1-2句）"
+}`;
+
+      const handleSubmit = async () => {
+        const selected = ZODIACS.find(z => z.id === zodiac);
+        setLoading(true); setError(''); setFortune(null);
+        try {
+          const text = await callGemini(buildPrompt(selected.label));
+          const jsonStr = text.replace(/```json|```/g, '').trim();
+          const parsed = JSON.parse(jsonStr);
+          setFortune({ ...parsed, label: selected.label, emoji: selected.emoji });
+        } catch (err) {
+          setError(`發生錯誤：${err.message}`);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="card">
+          <h1 className="title">🔮 星座今日運勢</h1>
+          <p className="subtitle">選擇你的星座，讓 Gemini AI 解讀今日運勢</p>
+
+          <div className="section-label">選擇星座</div>
+          <div className="zodiac-grid">
+            {ZODIACS.map(z => (
+              <button key={z.id} className={`zodiac-btn${zodiac === z.id ? ' active' : ''}`} onClick={() => setZodiac(z.id)}>
+                <span className="z-emoji">{z.emoji}</span>{z.label}
+              </button>
+            ))}
+          </div>
+
+          <button className="fortune-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? '⏳ 正在解讀星象中...' : '🌟 查看今日運勢'}
+          </button>
+
+          {loading && <div className="loading-area"><div className="spinner" /></div>}
+          {error && <div className="error-box">⚠️ {error}</div>}
+          {fortune && !loading && (
+            <div className="fortune-result">
+              <div className="fortune-result-header">
+                <span className="fortune-badge">✦ 今日運勢</span>
+                <span style={{color: '#aaa', marginLeft: '6px'}}>{fortune.emoji} {fortune.label}</span>
+              </div>
+
+              <div className="fortune-overall">{fortune.overall}</div>
+
+              <div className="fortune-grid-result">
+                <div className="fortune-card">
+                  <div className="fortune-card-label">🎨 幸運色</div>
+                  <div className="fortune-card-value">{fortune.luckyColor}</div>
+                </div>
+                <div className="fortune-card">
+                  <div className="fortune-card-label">🔢 幸運數字</div>
+                  <div className="fortune-card-value">{fortune.luckyNumber}</div>
+                </div>
+              </div>
+
+              <div className="fortune-detail-grid">
+                <div className="fortune-detail-card">
+                  <div className="fortune-detail-label">💕 愛情運</div>
+                  <div className="fortune-detail-value">{fortune.love}</div>
+                </div>
+                <div className="fortune-detail-card">
+                  <div className="fortune-detail-label">💼 事業運</div>
+                  <div className="fortune-detail-value">{fortune.career}</div>
+                </div>
+                <div className="fortune-detail-card">
+                  <div className="fortune-detail-label">🌿 健康運</div>
+                  <div className="fortune-detail-value">{fortune.health}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <>
+          <OutfitSection />
+          <FortuneSection />
+        </>
+      );
+    }
+
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
