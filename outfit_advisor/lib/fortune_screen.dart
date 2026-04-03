@@ -4,6 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
+import 'sound_service.dart';
 
 const _zodiacs = [
   ('aries',       '牡羊座', '♈'),
@@ -583,7 +584,12 @@ class _GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: disabled ? null : onTap,
+        onTap: disabled
+            ? null
+            : () {
+                SoundService.playMagic();
+                onTap();
+              },
         child: Opacity(
           opacity: disabled ? 0.5 : 1.0,
           child: Container(
