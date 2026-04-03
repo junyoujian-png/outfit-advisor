@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -68,7 +69,14 @@
     .result-area { margin-top: 28px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 16px; padding: 24px; }
     .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
     .result-badge { background: linear-gradient(135deg, #7c3aed, #c026d3); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
-    .result-content { color: rgba(255, 255, 255, 0.9); font-size: 15px; line-height: 1.8; white-space: pre-wrap; }
+    .result-content { color: rgba(255, 255, 255, 0.9); font-size: 15px; line-height: 1.8; }
+    .md h1, .md h2, .md h3 { font-weight: 700; margin: 16px 0 8px; color: #fff; }
+    .md h1 { font-size: 20px; } .md h2 { font-size: 18px; } .md h3 { font-size: 16px; }
+    .md p { margin-bottom: 10px; }
+    .md strong { color: #e2d9ff; font-weight: 700; }
+    .md ul, .md ol { padding-left: 20px; margin-bottom: 10px; }
+    .md li { margin-bottom: 4px; }
+    .md p:last-child, .md li:last-child { margin-bottom: 0; }
 
     /* ── Error ── */
     .error-box { margin-top: 20px; padding: 14px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; color: #fca5a5; font-size: 14px; }
@@ -237,7 +245,7 @@
                 <span className="result-badge">✦ 穿搭建議</span>
                 <span style={{color: '#aaa', marginLeft: '10px'}}>場合：{resultOccasion}</span>
               </div>
-              <div className="result-content">{result}</div>
+              <div className="result-content md" dangerouslySetInnerHTML={{__html: marked.parse(result)}} />
             </div>
           )}
         </div>
@@ -303,7 +311,7 @@
                 <span style={{color: '#aaa', marginLeft: '6px'}}>{fortune.emoji} {fortune.label}</span>
               </div>
 
-              <div className="fortune-overall">{fortune.overall}</div>
+              <div className="fortune-overall md" dangerouslySetInnerHTML={{__html: marked.parse(fortune.overall)}} />
 
               <div className="fortune-grid-result">
                 <div className="fortune-card">
@@ -319,15 +327,15 @@
               <div className="fortune-detail-grid">
                 <div className="fortune-detail-card">
                   <div className="fortune-detail-label">💕 愛情運</div>
-                  <div className="fortune-detail-value">{fortune.love}</div>
+                  <div className="fortune-detail-value md" dangerouslySetInnerHTML={{__html: marked.parse(fortune.love)}} />
                 </div>
                 <div className="fortune-detail-card">
                   <div className="fortune-detail-label">💼 事業運</div>
-                  <div className="fortune-detail-value">{fortune.career}</div>
+                  <div className="fortune-detail-value md" dangerouslySetInnerHTML={{__html: marked.parse(fortune.career)}} />
                 </div>
                 <div className="fortune-detail-card">
                   <div className="fortune-detail-label">🌿 健康運</div>
-                  <div className="fortune-detail-value">{fortune.health}</div>
+                  <div className="fortune-detail-value md" dangerouslySetInnerHTML={{__html: marked.parse(fortune.health)}} />
                 </div>
               </div>
             </div>
