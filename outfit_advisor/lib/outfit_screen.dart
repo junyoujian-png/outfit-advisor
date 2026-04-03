@@ -22,23 +22,33 @@ class _OutfitScreenState extends State<OutfitScreen> {
   String _resultOccasion = '';
   String _error = '';
 
-  String get _occasionLabel =>
-      _occasions.firstWhere((o) => o.$1 == _occasion, orElse: () => _occasions.first).$2;
+  (String, String, String) get _currentOccasion =>
+      _occasions.firstWhere((o) => o.$1 == _occasion,
+          orElse: () => _occasions.first);
 
   Future<void> _fetch() async {
-    if (_controller.text.trim().isEmpty) {
+    final input = _controller.text.trim();
+    if (input.isEmpty) {
       setState(() => _error = '請填寫您的個人資料！');
       return;
     }
-    setState(() { _loading = true; _error = ''; _result = ''; });
+    setState(() {
+      _loading = true;
+      _error = '';
+      _result = '';
+    });
     try {
+      final label = _currentOccasion.$2;
       final prompt =
-          '你是一位專業時尚穿搭顧問。請針對「$_occasionLabel」場合提供建議。\n'
-          '使用者資料：${_controller.text}\n'
+          '你是一位專業時尚穿搭顧問。請針對「$label」場合提供建議。\n'
+          '使用者資料：$input\n'
           '請以繁體中文清楚列出：1.整體風格概述 2.上衣建議 3.下身建議 '
           '4.鞋款建議 5.配件搭配 6.造型小技巧。請詳細說明搭配原因，讓造型具備層次感。';
       final text = await GeminiService.ask(prompt);
-      setState(() { _result = text; _resultOccasion = _occasionLabel; });
+      setState(() {
+        _result = text;
+        _resultOccasion = label;
+      });
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -60,22 +70,29 @@ class _OutfitScreenState extends State<OutfitScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          const Text('✨ 星座穿搭顧問',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text(
+            '✨ 星座穿搭顧問',
+            style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white),
+          ),
           const SizedBox(height: 4),
-          Text('告訴我你的身高、體重、性別、星座、幸運色、喜好顏色，讓 我 幫你搭配！',
-              style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.5))),
+          Text(
+            '告訴我你的身高、體重、性別、星座、幸運色、喜好顏色，讓 我 幫你搭配！',
+            style: TextStyle(
+                fontSize: 13, color: Colors.white.withValues(alpha: 0.5)),
+          ),
           const SizedBox(height: 24),
 
-          // 場合選擇
           _sectionLabel('選擇場合'),
           Row(
             children: _occasions.map((o) {
               final active = o.$1 == _occasion;
+              final isLast = o.$1 == _occasions.last.$1;
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      right: o.$1 != _occasions.last.$1 ? 8 : 0),
+                  padding: EdgeInsets.only(right: isLast ? 0 : 8),
                   child: GestureDetector(
                     onTap: () => setState(() => _occasion = o.$1),
                     child: AnimatedContainer(
@@ -95,21 +112,27 @@ class _OutfitScreenState extends State<OutfitScreen> {
                                 end: Alignment.bottomRight,
                               )
                             : null,
-                        color: active ? null : Colors.white.withValues(alpha: 0.05),
+                        color: active
+                            ? null
+                            : Colors.white.withValues(alpha: 0.05),
                       ),
                       child: Column(
                         children: [
-                          Text(o.$3, style: const TextStyle(fontSize: 22)),
+                          Text(o.$3,
+                              style: const TextStyle(fontSize: 22)),
                           const SizedBox(height: 4),
-                          Text(o.$2,
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  color: active
-                                      ? Colors.white
-                                      : Colors.white.withValues(alpha: 0.6),
-                                  fontWeight: active
-                                      ? FontWeight.w600
-                                      : FontWeight.normal)),
+                          Text(
+                            o.$2,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: active
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.6),
+                              fontWeight: active
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -120,13 +143,13 @@ class _OutfitScreenState extends State<OutfitScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 個人資料
           _sectionLabel('個人資料'),
           Container(
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: TextField(
               controller: _controller,
@@ -135,25 +158,32 @@ class _OutfitScreenState extends State<OutfitScreen> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(14),
-                hintText: '例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色，喜歡深色系，體型偏瘦...',
+                hintText:
+                    '例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色，喜歡深色系，體型偏瘦...',
                 hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3), fontSize: 14),
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 14),
               ),
             ),
           ),
           const SizedBox(height: 20),
 
-          // 按鈕
           _GradientButton(
             text: _loading ? '⏳ 雙子座正在為你穿搭中...' : '💫 幫我穿搭',
             disabled: _loading,
-            colors: const [Color(0xFF7C3AED), Color(0xFF9333EA), Color(0xFFC026D3)],
+            colors: const [
+              Color(0xFF7C3AED),
+              Color(0xFF9333EA),
+              Color(0xFFC026D3)
+            ],
             onTap: _fetch,
           ),
 
           if (_loading) ...[
             const SizedBox(height: 28),
-            const Center(child: CircularProgressIndicator(color: Color(0xFFA78BFA))),
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFFA78BFA)),
+            ),
           ],
           if (_error.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -163,19 +193,28 @@ class _OutfitScreenState extends State<OutfitScreen> {
             const SizedBox(height: 24),
             Row(children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   gradient: const LinearGradient(
                       colors: [Color(0xFF7C3AED), Color(0xFFC026D3)]),
                 ),
-                child: const Text('✦ 穿搭建議',
-                    style: TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                child: const Text(
+                  '✦ 穿搭建議',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
+                ),
               ),
               const SizedBox(width: 8),
-              Text('場合：$_resultOccasion',
-                  style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.5))),
+              Text(
+                '場合：$_resultOccasion',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.5)),
+              ),
             ]),
             const SizedBox(height: 12),
             Container(
@@ -194,15 +233,23 @@ class _OutfitScreenState extends State<OutfitScreen> {
                       color: Colors.white.withValues(alpha: 0.9),
                       height: 1.8),
                   strong: const TextStyle(
-                      color: Color(0xFFE2D9FF), fontWeight: FontWeight.w700),
+                      color: Color(0xFFE2D9FF),
+                      fontWeight: FontWeight.w700),
                   h1: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
                   h2: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
                   h3: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
                   listBullet: TextStyle(
-                      fontSize: 15, color: Colors.white.withValues(alpha: 0.9)),
+                      fontSize: 15,
+                      color: Colors.white.withValues(alpha: 0.9)),
                 ),
               ),
             ),
@@ -215,18 +262,25 @@ class _OutfitScreenState extends State<OutfitScreen> {
 
   Widget _sectionLabel(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text.toUpperCase(),
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withValues(alpha: 0.7),
-                letterSpacing: 0.5)),
+        child: Text(
+          text.toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withValues(alpha: 0.7),
+            letterSpacing: 0.5,
+          ),
+        ),
       );
 }
 
 class _GradientButton extends StatelessWidget {
-  const _GradientButton(
-      {required this.text, required this.onTap, required this.colors, this.disabled = false});
+  const _GradientButton({
+    required this.text,
+    required this.onTap,
+    required this.colors,
+    this.disabled = false,
+  });
   final String text;
   final VoidCallback onTap;
   final List<Color> colors;
@@ -243,12 +297,20 @@ class _GradientButton extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               gradient: LinearGradient(colors: colors),
-              boxShadow: [BoxShadow(color: colors.first.withValues(alpha: 0.35), blurRadius: 20)],
+              boxShadow: [
+                BoxShadow(
+                    color: colors.first.withValues(alpha: 0.35),
+                    blurRadius: 20),
+              ],
             ),
-            child: Text(text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white),
+            ),
           ),
         ),
       );
@@ -257,6 +319,7 @@ class _GradientButton extends StatelessWidget {
 class _ErrorBox extends StatelessWidget {
   const _ErrorBox({required this.message});
   final String message;
+
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
@@ -265,7 +328,9 @@ class _ErrorBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
         ),
-        child: Text('⚠️ $message',
-            style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 14)),
+        child: Text(
+          '⚠️ $message',
+          style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 14),
+        ),
       );
 }
