@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
 
 const _zodiacs = [
@@ -27,8 +29,10 @@ class FortuneScreen extends StatefulWidget {
 class _FortuneScreenState extends State<FortuneScreen> {
   String _selected = 'gemini';
   bool _loading = false;
+  bool _sharing = false;
   Map<String, String>? _fortune;
   String _error = '';
+  final _screenshotController = ScreenshotController();
 
   (String, String, String) get _selectedZodiac =>
       _zodiacs.firstWhere((z) => z.$1 == _selected, orElse: () => _zodiacs[2]);
@@ -68,6 +72,146 @@ class _FortuneScreenState extends State<FortuneScreen> {
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _shareCard() async {
+    setState(() => _sharing = true);
+    try {
+      final imageBytes = await _screenshotController.captureFromWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Material(
+            color: Colors.transparent,
+            child: _buildShareCardWidget(),
+          ),
+        ),
+        pixelRatio: 2.0,
+        delay: const Duration(milliseconds: 200),
+      );
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              imageBytes,
+              mimeType: 'image/png',
+              name: 'fortune_card.png',
+            ),
+          ],
+          text: '我的今日星座運勢 🔮 by 星座今日運勢',
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('分享失敗：$e'),
+            backgroundColor: const Color(0xFF3B1F2B),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  Widget _buildShareCardWidget() {
+    final fortune = _fortune!;
+    final zodiac = _selectedZodiac;
+    return Container(
+      width: 420,
+      padding: const EdgeInsets.all(28),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF2D1B4E), Color(0xFF1A1A2E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFB8860B), Color(0xFFFFD700)],
+                  ),
+                ),
+                child: const Text(
+                  '✦ 今日運勢',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A00)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '${zodiac.$3} ${zodiac.$2}',
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFFFD700)),
+              ),
+              const Spacer(),
+              const Text(
+                '🔮 星座運勢',
+                style: TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            height: 1,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xAAFFD700), Colors.transparent],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0x0DFFFFFF),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0x55FFD700)),
+            ),
+            child: MarkdownBody(
+              data: fortune['overall'] ?? '',
+              styleSheet: MarkdownStyleSheet(
+                p: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xE6FFFFFF),
+                    height: 1.7),
+                strong: const TextStyle(
+                    color: Color(0xFFFFE87C),
+                    fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: _ShareInfoTile(label: '🎨 幸運色', value: fortune['luckyColor'] ?? '')),
+            const SizedBox(width: 10),
+            Expanded(child: _ShareInfoTile(label: '🔢 幸運數字', value: fortune['luckyNumber'] ?? '')),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(child: _ShareDetailTile(label: '💕 愛情運', text: fortune['love'] ?? '')),
+            const SizedBox(width: 8),
+            Expanded(child: _ShareDetailTile(label: '💼 事業運', text: fortune['career'] ?? '')),
+            const SizedBox(width: 8),
+            Expanded(child: _ShareDetailTile(label: '🌿 健康運', text: fortune['health'] ?? '')),
+          ]),
+        ],
+      ),
+    );
   }
 
   @override
@@ -170,6 +314,17 @@ class _FortuneScreenState extends State<FortuneScreen> {
               label: _selectedZodiac.$2,
               emoji: _selectedZodiac.$3,
             ),
+            const SizedBox(height: 12),
+            _GradientButton(
+              text: _sharing ? '⏳ 準備分享中...' : '📤 分享運勢卡片',
+              disabled: _sharing,
+              colors: const [
+                Color(0xFFB8860B),
+                Color(0xFFD4A017),
+                Color(0xFFFFD700),
+              ],
+              onTap: _shareCard,
+            ),
           ],
           const SizedBox(height: 20),
         ],
@@ -255,6 +410,66 @@ class _FortuneResult extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ShareInfoTile extends StatelessWidget {
+  const _ShareInfoTile({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0x0DFFFFFF),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0x44FFD700)),
+        ),
+        child: Column(children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 11, color: Color(0xAAFFFFFF))),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFFFFE87C)),
+            textAlign: TextAlign.center,
+          ),
+        ]),
+      );
+}
+
+class _ShareDetailTile extends StatelessWidget {
+  const _ShareDetailTile({required this.label, required this.text});
+  final String label;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0x08FFFFFF),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0x22FFD700)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 10, color: Color(0x88FFFFFF))),
+            const SizedBox(height: 5),
+            Text(
+              text,
+              style: const TextStyle(
+                  fontSize: 11, color: Color(0xCCFFFFFF), height: 1.5),
+            ),
+          ],
+        ),
+      );
 }
 
 class _InfoCard extends StatelessWidget {
