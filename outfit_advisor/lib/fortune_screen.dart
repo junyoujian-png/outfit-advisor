@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:http/http.dart' as http;
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'gemini_service.dart';
 import 'sound_service.dart';
 
 const _zodiacs = [
@@ -45,22 +45,22 @@ class _FortuneScreenState extends State<FortuneScreen> {
       _fortune = null;
     });
     try {
-      final label = _selectedZodiac.$2;
-      final prompt =
-          '你是一位專業星座運勢占卜師。請為「$label」提供今日運勢，'
-          '並嚴格以下方 JSON 格式回傳，不要加任何多餘文字或 markdown：\n'
-          '{"overall":"今日運勢總評（2-3句）","luckyColor":"幸運色",'
-          '"luckyNumber":"幸運數字","love":"愛情運（1-2句）",'
-          '"career":"事業運（1-2句）","health":"健康運（1-2句）"}';
+      final sign = _selectedZodiac.$1;
+      final uri = Uri.parse(
+        'https://outfit-advisor-xi.vercel.app/api/get-today-fortune?sign=$sign',
+      );
+      final res = await http.get(uri).timeout(const Duration(seconds: 30));
 
-      final raw = await GeminiService.ask(prompt);
-      final clean = raw
-          .replaceAll(RegExp(r'```json'), '')
-          .replaceAll(RegExp(r'```'), '')
-          .trim();
+      Map<String, dynamic> decoded;
+      try {
+        decoded = jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {
+        throw Exception('伺服器回傳格式錯誤');
+      }
 
-      final decoded = jsonDecode(clean);
-      if (decoded is! Map) throw Exception('AI 回傳格式錯誤');
+      if (res.statusCode != 200) {
+        throw Exception(decoded['error']?.toString() ?? '查詢失敗（HTTP ${res.statusCode}）');
+      }
 
       final map = Map<String, String>.fromEntries(
         decoded.entries.map(
