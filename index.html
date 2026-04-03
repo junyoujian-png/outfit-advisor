@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>雙子座穿搭顧問</title>
+  <title>星座穿搭顧問</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -217,7 +217,7 @@
 
       return (
         <div className="card">
-          <h1 className="title">✨ 雙子座穿搭顧問</h1>
+          <h1 className="title">✨ 星座穿搭顧問</h1>
           <p className="subtitle">輸入你的資料，讓 Gemini AI 為你量身打造穿搭建議</p>
 
           <div className="section-label">選擇場合</div>
@@ -231,10 +231,10 @@
 
           <div className="section-label">個人資料</div>
           <textarea className="user-textarea" value={userInfo} onChange={e => setUserInfo(e.target.value)}
-            placeholder="例如：身高 174.5cm，體重 70kg，喜歡深色系，體型偏瘦..." />
+            placeholder="例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色:喜歡深色系，體型偏瘦..." />
 
           <button className="gemini-btn" onClick={handleSubmit} disabled={loading}>
-            {loading ? '⏳ 雙子座正在為你穿搭中...' : '💫 呼叫雙子座自動幫我穿搭'}
+            {loading ? '⏳ 星座正在為你穿搭中...' : '💫 呼叫星座自動幫我穿搭'}
           </button>
 
           {loading && <div className="loading-area"><div className="spinner" /></div>}
