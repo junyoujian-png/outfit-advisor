@@ -273,10 +273,13 @@
         const selected = ZODIACS.find(z => z.id === zodiac);
         setLoading(true); setError(''); setFortune(null);
         try {
-          const text = await callGemini(buildPrompt(selected.label));
-          const jsonStr = text.replace(/```json|```/g, '').trim();
-          const parsed = JSON.parse(jsonStr);
-          setFortune({ ...parsed, label: selected.label, emoji: selected.emoji });
+          const res = await fetch(`/api/get-today-fortune?sign=${zodiac}`);
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || '查詢失敗');
+          }
+          const data = await res.json();
+          setFortune({ ...data, label: selected.label, emoji: selected.emoji });
         } catch (err) {
           setError(`發生錯誤：${err.message}`);
         } finally {

@@ -1,9 +1,8 @@
 {
-  "version": 2,
-  "rewrites": [
+  "crons": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "path": "/api/update-horoscopes?secret=horoscope2026",
+      "schedule": "0 16 * * *"
     }
   ]
 }
