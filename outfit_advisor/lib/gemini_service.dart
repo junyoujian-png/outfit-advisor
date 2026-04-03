@@ -12,11 +12,21 @@ class GeminiService {
       body: jsonEncode({'prompt': prompt}),
     );
     if (res.statusCode != 200) {
-      final err = jsonDecode(res.body)['error'] ?? 'HTTP ${res.statusCode}';
+      String err;
+      try {
+        err = (jsonDecode(res.body) as Map<String, dynamic>)['error'] as String? ?? 'HTTP ${res.statusCode}';
+      } catch (_) {
+        err = 'HTTP ${res.statusCode}';
+      }
       throw Exception(err);
     }
-    final text = jsonDecode(res.body)['text'] as String?;
-    if (text == null || text.isEmpty) throw Exception('AI 沒有回傳內容');
+    String text;
+    try {
+      text = (jsonDecode(res.body) as Map<String, dynamic>)['text'] as String? ?? '';
+    } catch (_) {
+      throw Exception('回傳格式錯誤');
+    }
+    if (text.isEmpty) throw Exception('AI 沒有回傳內容');
     return text;
   }
 }

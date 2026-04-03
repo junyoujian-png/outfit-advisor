@@ -31,9 +31,9 @@ class _FortuneScreenState extends State<FortuneScreen> {
   String _error = '';
 
   String get _selectedLabel =>
-      _zodiacs.firstWhere((z) => z.$1 == _selected).$2;
+      _zodiacs.firstWhere((z) => z.$1 == _selected, orElse: () => _zodiacs.first).$2;
   String get _selectedEmoji =>
-      _zodiacs.firstWhere((z) => z.$1 == _selected).$3;
+      _zodiacs.firstWhere((z) => z.$1 == _selected, orElse: () => _zodiacs.first).$3;
 
   Future<void> _fetch() async {
     setState(() { _loading = true; _error = ''; _fortune = null; });
@@ -46,7 +46,11 @@ class _FortuneScreenState extends State<FortuneScreen> {
           '"career":"事業運（1-2句）","health":"健康運（1-2句）"}';
       final raw = await GeminiService.ask(prompt);
       final clean = raw.replaceAll(RegExp(r'```json|```'), '').trim();
-      final map = Map<String, String>.from(jsonDecode(clean));
+      final decoded = jsonDecode(clean);
+      if (decoded is! Map) throw Exception('AI 回傳格式錯誤');
+      final map = Map<String, String>.fromEntries(
+        decoded.entries.map((e) => MapEntry(e.key.toString(), e.value?.toString() ?? '')),
+      );
       setState(() => _fortune = map);
     } catch (e) {
       setState(() => _error = e.toString());

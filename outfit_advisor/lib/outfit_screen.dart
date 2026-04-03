@@ -23,7 +23,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
   String _error = '';
 
   String get _occasionLabel =>
-      _occasions.firstWhere((o) => o.$1 == _occasion).$2;
+      _occasions.firstWhere((o) => o.$1 == _occasion, orElse: () => _occasions.first).$2;
 
   Future<void> _fetch() async {
     if (_controller.text.trim().isEmpty) {
