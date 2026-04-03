@@ -4,5 +4,8 @@
   "description": "Vercel deployment for Gemini Outfit Advisor",
   "scripts": {
     "start": "node api/gemini.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4"
   }
 }
