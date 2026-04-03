@@ -28,8 +28,11 @@ function buildPrompt(label) {
 }
 
 async function callGemini(prompt) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY 環境變數未設定');
+
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,10 +42,10 @@ async function callGemini(prompt) {
     }
   );
   const data = await res.json();
+  if (!res.ok) throw new Error('Gemini API 錯誤: ' + JSON.stringify(data));
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  // 用正則抓出 { } 之間的 JSON
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('Gemini 未回傳有效 JSON: ' + text.slice(0, 100));
+  if (!match) throw new Error('無效 JSON，原始回應: ' + text.slice(0, 200));
   return JSON.parse(match[0]);
 }
 
