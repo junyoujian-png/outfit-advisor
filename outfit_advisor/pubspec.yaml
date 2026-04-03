@@ -33,6 +33,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.0
   flutter_markdown: ^0.7.0
+  screenshot: ^3.0.0
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
 
 const _occasions = [
@@ -17,7 +19,9 @@ class OutfitScreen extends StatefulWidget {
 class _OutfitScreenState extends State<OutfitScreen> {
   String _occasion = 'casual';
   final _controller = TextEditingController();
+  final _screenshotController = ScreenshotController();
   bool _loading = false;
+  bool _sharing = false;
   String _result = '';
   String _resultOccasion = '';
   String _error = '';
@@ -54,6 +58,143 @@ class _OutfitScreenState extends State<OutfitScreen> {
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _shareCard() async {
+    setState(() => _sharing = true);
+    try {
+      final imageBytes = await _screenshotController.captureFromWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Material(
+            color: Colors.transparent,
+            child: _buildShareCardWidget(),
+          ),
+        ),
+        pixelRatio: 2.0,
+        delay: const Duration(milliseconds: 200),
+      );
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              imageBytes,
+              mimeType: 'image/png',
+              name: 'outfit_card.png',
+            ),
+          ],
+          text: '我的穿搭建議 ✨ by 星座穿搭顧問',
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('分享失敗：$e'),
+            backgroundColor: const Color(0xFF3B1F6B),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  Widget _buildShareCardWidget() {
+    return Container(
+      width: 420,
+      padding: const EdgeInsets.all(28),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFFC026D3)],
+                  ),
+                ),
+                child: const Text(
+                  '✦ 穿搭建議',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '場合：$_resultOccasion',
+                style: const TextStyle(
+                    fontSize: 13, color: Color(0x99FFFFFF)),
+              ),
+              const Spacer(),
+              const Text(
+                '✨ 星座穿搭顧問',
+                style: TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            height: 1,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0x667C3AED), Colors.transparent],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0x0DFFFFFF),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0x4DA78BFA)),
+            ),
+            child: MarkdownBody(
+              data: _result,
+              styleSheet: MarkdownStyleSheet(
+                p: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xE6FFFFFF),
+                    height: 1.7),
+                strong: const TextStyle(
+                    color: Color(0xFFE2D9FF),
+                    fontWeight: FontWeight.w700),
+                h1: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white),
+                h2: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white),
+                h3: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white),
+                listBullet: const TextStyle(
+                    fontSize: 13, color: Color(0xE6FFFFFF)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -107,7 +248,10 @@ class _OutfitScreenState extends State<OutfitScreen> {
                         ),
                         gradient: active
                             ? const LinearGradient(
-                                colors: [Color(0x668B5CF6), Color(0x55EC4899)],
+                                colors: [
+                                  Color(0x668B5CF6),
+                                  Color(0x55EC4899)
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               )
@@ -148,8 +292,8 @@ class _OutfitScreenState extends State<OutfitScreen> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: TextField(
               controller: _controller,
@@ -169,12 +313,12 @@ class _OutfitScreenState extends State<OutfitScreen> {
           const SizedBox(height: 20),
 
           _GradientButton(
-            text: _loading ? '⏳ 雙子座正在為你穿搭中...' : '💫 幫我穿搭',
+            text: _loading ? '⏳ 正在為你穿搭中...' : '💫 幫我穿搭',
             disabled: _loading,
             colors: const [
               Color(0xFF7C3AED),
               Color(0xFF9333EA),
-              Color(0xFFC026D3)
+              Color(0xFFC026D3),
             ],
             onTap: _fetch,
           ),
@@ -182,7 +326,8 @@ class _OutfitScreenState extends State<OutfitScreen> {
           if (_loading) ...[
             const SizedBox(height: 28),
             const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA78BFA)),
+              child:
+                  CircularProgressIndicator(color: Color(0xFFA78BFA)),
             ),
           ],
           if (_error.isNotEmpty) ...[
@@ -193,8 +338,8 @@ class _OutfitScreenState extends State<OutfitScreen> {
             const SizedBox(height: 24),
             Row(children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   gradient: const LinearGradient(
@@ -252,6 +397,17 @@ class _OutfitScreenState extends State<OutfitScreen> {
                       color: Colors.white.withValues(alpha: 0.9)),
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            _GradientButton(
+              text: _sharing ? '⏳ 準備分享中...' : '📤 分享穿搭卡片',
+              disabled: _sharing,
+              colors: const [
+                Color(0xFF4F46E5),
+                Color(0xFF7C3AED),
+                Color(0xFFA855F7),
+              ],
+              onTap: _shareCard,
             ),
           ],
           const SizedBox(height: 20),
