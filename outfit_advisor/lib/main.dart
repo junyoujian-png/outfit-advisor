@@ -36,23 +36,7 @@ class OutfitAdvisorApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFF1A1A2E),
       ),
-      home: const _TestPage(),
-    );
-  }
-}
-
-class _TestPage extends StatelessWidget {
-  const _TestPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          '測試',
-          style: TextStyle(fontSize: 32, color: Colors.white),
-        ),
-      ),
+      home: const _HomeShell(),
     );
   }
 }
