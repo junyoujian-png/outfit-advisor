@@ -40,8 +40,10 @@ async function callGemini(prompt) {
   );
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const clean = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  // 用正則抓出 { } 之間的 JSON
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Gemini 未回傳有效 JSON: ' + text.slice(0, 100));
+  return JSON.parse(match[0]);
 }
 
 module.exports = async function handler(req, res) {
