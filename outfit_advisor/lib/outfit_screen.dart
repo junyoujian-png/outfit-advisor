@@ -328,7 +328,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(14),
                 hintText: _isEn
-                    ? 'e.g. Height: 5\'9", Weight: 154lbs, Gender: Male, Sign: Pisces, Lucky color: Sky blue, Prefer dark tones, Slim build...'
+                    ? 'e.g. Height: 174.5cm, Weight: 70kg, Gender: Male, Zodiac: Pisces, Lucky color: Sky blue, Prefer dark tones, Slim build...'
                     : '例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色，喜歡深色系，體型偏瘦...',
                 hintStyle: TextStyle(
                     color: Colors.white.withValues(alpha: 0.3),
