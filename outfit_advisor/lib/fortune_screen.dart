@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:screenshot/screenshot.dart';
@@ -22,7 +21,8 @@ const _zodiacs = [
 ];
 
 class FortuneScreen extends StatefulWidget {
-  const FortuneScreen({super.key});
+  const FortuneScreen({super.key, required this.language});
+  final String language;
   @override
   State<FortuneScreen> createState() => _FortuneScreenState();
 }
@@ -49,10 +49,7 @@ class _FortuneScreenState extends State<FortuneScreen> {
       final now = DateTime.now().toUtc().add(const Duration(hours: 8));
       final today =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-      final langCode =
-          ui.PlatformDispatcher.instance.locale.languageCode.startsWith('zh')
-              ? 'zh'
-              : 'en';
+      final langCode = widget.language.startsWith('zh') ? 'zh' : 'en';
 
       final row = await Supabase.instance.client
           .from('daily_horoscopes')

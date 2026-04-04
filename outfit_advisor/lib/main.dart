@@ -31,7 +31,10 @@ class OutfitAdvisorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '星座穿搭顧問',
+      onGenerateTitle: (context) {
+        final lang = Localizations.localeOf(context).languageCode;
+        return lang == 'en' ? 'Horoscope Advisor' : '星座穿搭顧問';
+      },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -55,13 +58,16 @@ class _HomeShell extends StatefulWidget {
 class _HomeShellState extends State<_HomeShell> {
   int _tab = 0;
 
-  static const _pages = <Widget>[
-    FortuneScreen(),
-    OutfitScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final isEn = locale == 'en';
+
+    final pages = <Widget>[
+      FortuneScreen(language: locale),
+      OutfitScreen(language: locale),
+    ];
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -73,7 +79,7 @@ class _HomeShellState extends State<_HomeShell> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: SafeArea(child: _pages[_tab]),
+        child: SafeArea(child: pages[_tab]),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -91,14 +97,14 @@ class _HomeShellState extends State<_HomeShell> {
           selectedLabelStyle:
               const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
           elevation: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Text('🔮', style: TextStyle(fontSize: 22)),
-              label: '星座運勢',
+              icon: const Text('🔮', style: TextStyle(fontSize: 22)),
+              label: isEn ? 'Horoscope' : '星座運勢',
             ),
             BottomNavigationBarItem(
-              icon: Text('✨', style: TextStyle(fontSize: 22)),
-              label: '穿搭建議',
+              icon: const Text('✨', style: TextStyle(fontSize: 22)),
+              label: isEn ? 'Outfit' : '穿搭建議',
             ),
           ],
         ),

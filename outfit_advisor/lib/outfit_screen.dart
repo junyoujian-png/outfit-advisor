@@ -12,7 +12,8 @@ const _occasions = [
 ];
 
 class OutfitScreen extends StatefulWidget {
-  const OutfitScreen({super.key});
+  const OutfitScreen({super.key, required this.language});
+  final String language;
   @override
   State<OutfitScreen> createState() => _OutfitScreenState();
 }
