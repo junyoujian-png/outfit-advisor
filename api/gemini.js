@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
 
   try {
     // 🚀 使用強大的 Gemini 2.5 Flash 正式版
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const response = await fetch(url, {
       method: 'POST',
