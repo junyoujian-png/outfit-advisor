@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'fortune_screen.dart';
 import 'outfit_screen.dart';
 
@@ -10,8 +11,12 @@ void main() {
   };
 
   runZonedGuarded(
-    () {
+    () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await Supabase.initialize(
+        url: 'https://xgqspvqpmvousjkyznal.supabase.co',
+        anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+      );
       runApp(const OutfitAdvisorApp());
     },
     (error, stack) {

@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:http/http.dart' as http;
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'sound_service.dart';
 
 const _zodiacs = [
@@ -46,28 +45,30 @@ class _FortuneScreenState extends State<FortuneScreen> {
     });
     try {
       final sign = _selectedZodiac.$1;
-      final uri = Uri.parse(
-        'https://outfit-advisor-xi.vercel.app/api/get-today-fortune?sign=$sign',
-      );
-      final res = await http.get(uri).timeout(const Duration(seconds: 30));
+      final now = DateTime.now().toUtc().add(const Duration(hours: 8));
+      final today =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-      Map<String, dynamic> decoded;
-      try {
-        decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      } catch (_) {
-        throw Exception('伺服器回傳格式錯誤');
-      }
+      final row = await Supabase.instance.client
+          .from('daily_horoscopes')
+          .select('content_json')
+          .eq('zodiac_sign', sign)
+          .eq('date', today)
+          .single();
 
-      if (res.statusCode != 200) {
-        throw Exception(decoded['error']?.toString() ?? '查詢失敗（HTTP ${res.statusCode}）');
-      }
+      final content = row['content_json'];
+      if (content is! Map) throw Exception('資料格式錯誤');
 
       final map = Map<String, String>.fromEntries(
-        decoded.entries.map(
+        content.entries.map(
           (e) => MapEntry(e.key.toString(), e.value?.toString() ?? ''),
         ),
       );
       setState(() => _fortune = map);
+    } on PostgrestException catch (e) {
+      setState(() => _error = e.code == 'PGRST116'
+          ? '今日運勢尚未準備好，請稍後再試'
+          : '查詢失敗：${e.message}');
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
