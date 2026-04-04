@@ -77,10 +77,18 @@ module.exports = async function handler(req, res) {
     .toISOString()
     .split('T')[0];
 
-  const langs = [
+  const allLangs = [
     { code: 'zh', buildPrompt: (label) => buildPromptZh(label) },
     { code: 'en', buildPrompt: (label) => buildPromptEn(label) },
   ];
+  const langFilter = req.query.lang;
+  const langs = langFilter
+    ? allLangs.filter((l) => l.code === langFilter)
+    : allLangs;
+  if (langs.length === 0) {
+    return res.status(400).json({ error: `不支援的 lang 參數：${langFilter}，請使用 zh 或 en` });
+  }
+  const total = ZODIACS.length * langs.length;
 
   const tasks = ZODIACS.flatMap((zodiac) =>
     langs.map((lang) => async () => {
@@ -118,7 +126,7 @@ module.exports = async function handler(req, res) {
     date: today,
     success: results,
     errors,
-    message: `完成 ${results.length}/24 個星座語言組合`,
+    message: `完成 ${results.length}/${total} 個星座語言組合`,
   });
   } catch (err) {
     console.error('Handler Error:', err);
