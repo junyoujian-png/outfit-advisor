@@ -76,30 +76,37 @@ module.exports = async function handler(req, res) {
     .toISOString()
     .split('T')[0];
 
-  const results = [];
-  const errors = [];
-
   const langs = [
     { code: 'zh', buildPrompt: (label) => buildPromptZh(label) },
     { code: 'en', buildPrompt: (label) => buildPromptEn(label) },
   ];
 
-  for (const zodiac of ZODIACS) {
-    for (const lang of langs) {
-      try {
-        const content = await callGemini(lang.buildPrompt(zodiac.label));
-        const { error } = await supabase
-          .from('daily_horoscopes')
-          .upsert(
-            { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
-            { onConflict: 'zodiac_sign,date,lang' }
-          );
-        if (error) throw error;
-        results.push(`${zodiac.id}(${lang.code})`);
-        await new Promise(r => setTimeout(r, 500));
-      } catch (err) {
-        errors.push({ zodiac: zodiac.id, lang: lang.code, error: err.message });
-      }
+  const tasks = ZODIACS.flatMap((zodiac) =>
+    langs.map((lang) => async () => {
+      const content = await callGemini(lang.buildPrompt(zodiac.label));
+      const { error } = await supabase
+        .from('daily_horoscopes')
+        .upsert(
+          { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
+          { onConflict: 'zodiac_sign,date,lang' }
+        );
+      if (error) throw error;
+      return `${zodiac.id}(${lang.code})`;
+    })
+  );
+
+  const settled = await Promise.allSettled(tasks.map((t) => t()));
+
+  const results = [];
+  const errors = [];
+  for (let i = 0; i < settled.length; i++) {
+    const r = settled[i];
+    if (r.status === 'fulfilled') {
+      results.push(r.value);
+    } else {
+      const zodiac = ZODIACS[Math.floor(i / langs.length)];
+      const lang = langs[i % langs.length];
+      errors.push({ zodiac: zodiac.id, lang: lang.code, error: r.reason?.message ?? String(r.reason) });
     }
   }
 
