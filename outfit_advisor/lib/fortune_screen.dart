@@ -62,6 +62,9 @@ class _FortuneScreenState extends State<FortuneScreen> {
           .eq('lang', langCode)
           .single();
 
+      // ignore: avoid_print
+      print('🔥 語言: $langCode, 資料: $row');
+
       final content = row['content_json'];
       if (content is! Map) throw Exception('資料格式錯誤');
 
