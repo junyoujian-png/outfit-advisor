@@ -5,19 +5,20 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'sound_service.dart';
 
+// (id, zhName, enName, emoji)
 const _zodiacs = [
-  ('aries',       '牡羊座', '♈'),
-  ('taurus',      '金牛座', '♉'),
-  ('gemini',      '雙子座', '♊'),
-  ('cancer',      '巨蟹座', '♋'),
-  ('leo',         '獅子座', '♌'),
-  ('virgo',       '處女座', '♍'),
-  ('libra',       '天秤座', '♎'),
-  ('scorpio',     '天蠍座', '♏'),
-  ('sagittarius', '射手座', '♐'),
-  ('capricorn',   '摩羯座', '♑'),
-  ('aquarius',    '水瓶座', '♒'),
-  ('pisces',      '雙魚座', '♓'),
+  ('aries',        '牡羊座', 'Aries',       '♈'),
+  ('taurus',       '金牛座', 'Taurus',      '♉'),
+  ('gemini',       '雙子座', 'Gemini',      '♊'),
+  ('cancer',       '巨蟹座', 'Cancer',      '♋'),
+  ('leo',          '獅子座', 'Leo',         '♌'),
+  ('virgo',        '處女座', 'Virgo',       '♍'),
+  ('libra',        '天秤座', 'Libra',       '♎'),
+  ('scorpio',      '天蠍座', 'Scorpio',     '♏'),
+  ('sagittarius',  '射手座', 'Sagittarius', '♐'),
+  ('capricorn',    '摩羯座', 'Capricorn',   '♑'),
+  ('aquarius',     '水瓶座', 'Aquarius',    '♒'),
+  ('pisces',       '雙魚座', 'Pisces',      '♓'),
 ];
 
 class FortuneScreen extends StatefulWidget {
@@ -35,7 +36,10 @@ class _FortuneScreenState extends State<FortuneScreen> {
   String _error = '';
   final _screenshotController = ScreenshotController();
 
-  (String, String, String) get _selectedZodiac =>
+  bool get _isEn => widget.language == 'en';
+
+  // (id, zhName, enName, emoji)
+  (String, String, String, String) get _selectedZodiac =>
       _zodiacs.firstWhere((z) => z.$1 == _selected, orElse: () => _zodiacs[2]);
 
   Future<void> _fetch() async {
@@ -63,7 +67,7 @@ class _FortuneScreenState extends State<FortuneScreen> {
       print('🔥 語言: $langCode, 資料: $row');
 
       final content = row['content_json'];
-      if (content is! Map) throw Exception('資料格式錯誤');
+      if (content is! Map) throw Exception(_isEn ? 'Invalid data format' : '資料格式錯誤');
 
       final map = Map<String, String>.fromEntries(
         content.entries.map(
@@ -73,8 +77,10 @@ class _FortuneScreenState extends State<FortuneScreen> {
       setState(() => _fortune = map);
     } on PostgrestException catch (e) {
       setState(() => _error = e.code == 'PGRST116'
-          ? '今日運勢尚未準備好，請稍後再試'
-          : '查詢失敗：${e.message}');
+          ? (_isEn
+              ? "Today's horoscope isn't ready yet, please try again later"
+              : '今日運勢尚未準備好，請稍後再試')
+          : (_isEn ? 'Query failed: ${e.message}' : '查詢失敗：${e.message}'));
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -105,14 +111,16 @@ class _FortuneScreenState extends State<FortuneScreen> {
               name: 'fortune_card.png',
             ),
           ],
-          text: '我的今日星座運勢 🔮 by 星座今日運勢',
+          text: _isEn
+              ? "My Today's Horoscope 🔮 by Horoscope Advisor"
+              : '我的今日星座運勢 🔮 by 星座今日運勢',
         ),
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('分享失敗：$e'),
+            content: Text(_isEn ? 'Share failed: $e' : '分享失敗：$e'),
             backgroundColor: const Color(0xFF3B1F2B),
           ),
         );
@@ -125,6 +133,7 @@ class _FortuneScreenState extends State<FortuneScreen> {
   Widget _buildShareCardWidget() {
     final fortune = _fortune!;
     final zodiac = _selectedZodiac;
+    final zodiacLabel = _isEn ? zodiac.$3 : zodiac.$2;
     return Container(
       width: 420,
       padding: const EdgeInsets.all(28),
@@ -149,9 +158,9 @@ class _FortuneScreenState extends State<FortuneScreen> {
                     colors: [Color(0xFFB8860B), Color(0xFFFFD700)],
                   ),
                 ),
-                child: const Text(
-                  '✦ 今日運勢',
-                  style: TextStyle(
+                child: Text(
+                  _isEn ? "✦ Today's Fortune" : '✦ 今日運勢',
+                  style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1A1A00)),
@@ -159,16 +168,16 @@ class _FortuneScreenState extends State<FortuneScreen> {
               ),
               const SizedBox(width: 10),
               Text(
-                '${zodiac.$3} ${zodiac.$2}',
+                '${zodiac.$4} $zodiacLabel',
                 style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFFFD700)),
               ),
               const Spacer(),
-              const Text(
-                '🔮 星座運勢',
-                style: TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
+              Text(
+                _isEn ? '🔮 Horoscope' : '🔮 星座運勢',
+                style: const TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
               ),
             ],
           ),
@@ -205,17 +214,27 @@ class _FortuneScreenState extends State<FortuneScreen> {
           ),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _ShareInfoTile(label: '🎨 幸運色', value: fortune['luckyColor'] ?? '')),
+            Expanded(child: _ShareInfoTile(
+                label: _isEn ? '🎨 Lucky Color' : '🎨 幸運色',
+                value: fortune['luckyColor'] ?? '')),
             const SizedBox(width: 10),
-            Expanded(child: _ShareInfoTile(label: '🔢 幸運數字', value: fortune['luckyNumber'] ?? '')),
+            Expanded(child: _ShareInfoTile(
+                label: _isEn ? '🔢 Lucky Number' : '🔢 幸運數字',
+                value: fortune['luckyNumber'] ?? '')),
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: _ShareDetailTile(label: '💕 愛情運', text: fortune['love'] ?? '')),
+            Expanded(child: _ShareDetailTile(
+                label: _isEn ? '💕 Love' : '💕 愛情運',
+                text: fortune['love'] ?? '')),
             const SizedBox(width: 8),
-            Expanded(child: _ShareDetailTile(label: '💼 事業運', text: fortune['career'] ?? '')),
+            Expanded(child: _ShareDetailTile(
+                label: _isEn ? '💼 Career' : '💼 事業運',
+                text: fortune['career'] ?? '')),
             const SizedBox(width: 8),
-            Expanded(child: _ShareDetailTile(label: '🌿 健康運', text: fortune['health'] ?? '')),
+            Expanded(child: _ShareDetailTile(
+                label: _isEn ? '🌿 Health' : '🌿 健康運',
+                text: fortune['health'] ?? '')),
           ]),
         ],
       ),
@@ -224,20 +243,23 @@ class _FortuneScreenState extends State<FortuneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final zodiac = _selectedZodiac;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          const Text(
-            '🔮 星座今日運勢',
-            style: TextStyle(
+          Text(
+            _isEn ? "🔮 Today's Horoscope" : '🔮 星座今日運勢',
+            style: const TextStyle(
                 fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
-            '選擇你的星座，讓我解讀今日運勢',
+            _isEn
+                ? 'Select your sign to reveal your daily fortune'
+                : '選擇你的星座，讓我解讀今日運勢',
             style: TextStyle(
                 fontSize: 13, color: Colors.white.withValues(alpha: 0.5)),
           ),
@@ -252,6 +274,7 @@ class _FortuneScreenState extends State<FortuneScreen> {
             childAspectRatio: 1.1,
             children: _zodiacs.map((z) {
               final active = z.$1 == _selected;
+              final displayName = _isEn ? z.$3 : z.$2;
               return GestureDetector(
                 onTap: () => setState(() => _selected = z.$1),
                 child: AnimatedContainer(
@@ -277,18 +300,21 @@ class _FortuneScreenState extends State<FortuneScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(z.$3, style: const TextStyle(fontSize: 22)),
+                      Text(z.$4, style: const TextStyle(fontSize: 22)),
                       const SizedBox(height: 4),
                       Text(
-                        z.$2,
+                        displayName,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: _isEn ? 9 : 11,
                           color: active
                               ? Colors.white
                               : Colors.white.withValues(alpha: 0.6),
                           fontWeight:
                               active ? FontWeight.w600 : FontWeight.normal,
                         ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -299,7 +325,9 @@ class _FortuneScreenState extends State<FortuneScreen> {
           const SizedBox(height: 20),
 
           _GradientButton(
-            text: _loading ? '⏳ 正在解讀星象中...' : '🌟 查看今日運勢',
+            text: _loading
+                ? (_isEn ? '⏳ Reading the stars...' : '⏳ 正在解讀星象中...')
+                : (_isEn ? '🌟 Check Today\'s Fortune' : '🌟 查看今日運勢'),
             disabled: _loading,
             colors: const [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFFA855F7)],
             onTap: _fetch,
@@ -319,12 +347,15 @@ class _FortuneScreenState extends State<FortuneScreen> {
             const SizedBox(height: 24),
             _FortuneResult(
               fortune: _fortune!,
-              label: _selectedZodiac.$2,
-              emoji: _selectedZodiac.$3,
+              label: _isEn ? zodiac.$3 : zodiac.$2,
+              emoji: zodiac.$4,
+              isEn: _isEn,
             ),
             const SizedBox(height: 12),
             _GradientButton(
-              text: _sharing ? '⏳ 準備分享中...' : '📤 分享運勢卡片',
+              text: _sharing
+                  ? (_isEn ? '⏳ Preparing...' : '⏳ 準備分享中...')
+                  : (_isEn ? '📤 Share Fortune Card' : '📤 分享運勢卡片'),
               disabled: _sharing,
               colors: const [
                 Color(0xFFB8860B),
@@ -346,10 +377,12 @@ class _FortuneResult extends StatelessWidget {
     required this.fortune,
     required this.label,
     required this.emoji,
+    required this.isEn,
   });
   final Map<String, String> fortune;
   final String label;
   final String emoji;
+  final bool isEn;
 
   @override
   Widget build(BuildContext context) {
@@ -364,9 +397,9 @@ class _FortuneResult extends StatelessWidget {
               gradient: const LinearGradient(
                   colors: [Color(0xFF4F46E5), Color(0xFFA855F7)]),
             ),
-            child: const Text(
-              '✦ 今日運勢',
-              style: TextStyle(
+            child: Text(
+              isEn ? "✦ Today's Fortune" : '✦ 今日運勢',
+              style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.white),
@@ -394,26 +427,31 @@ class _FortuneResult extends StatelessWidget {
         Row(children: [
           Expanded(
               child: _InfoCard(
-                  label: '🎨 幸運色', value: fortune['luckyColor'] ?? '')),
+                  label: isEn ? '🎨 Lucky Color' : '🎨 幸運色',
+                  value: fortune['luckyColor'] ?? '')),
           const SizedBox(width: 10),
           Expanded(
               child: _InfoCard(
-                  label: '🔢 幸運數字', value: fortune['luckyNumber'] ?? '')),
+                  label: isEn ? '🔢 Lucky Number' : '🔢 幸運數字',
+                  value: fortune['luckyNumber'] ?? '')),
         ]),
         const SizedBox(height: 10),
 
         Row(children: [
           Expanded(
               child: _DetailCard(
-                  label: '💕 愛情運', text: fortune['love'] ?? '')),
+                  label: isEn ? '💕 Love' : '💕 愛情運',
+                  text: fortune['love'] ?? '')),
           const SizedBox(width: 8),
           Expanded(
               child: _DetailCard(
-                  label: '💼 事業運', text: fortune['career'] ?? '')),
+                  label: isEn ? '💼 Career' : '💼 事業運',
+                  text: fortune['career'] ?? '')),
           const SizedBox(width: 8),
           Expanded(
               child: _DetailCard(
-                  label: '🌿 健康運', text: fortune['health'] ?? '')),
+                  label: isEn ? '🌿 Health' : '🌿 健康運',
+                  text: fortune['health'] ?? '')),
         ]),
       ],
     );

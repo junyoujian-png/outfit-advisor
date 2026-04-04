@@ -5,10 +5,11 @@ import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
 import 'sound_service.dart';
 
+// (id, zhName, enName, emoji)
 const _occasions = [
-  ('casual', '日常休閒', '👕'),
-  ('formal', '正式會議', '💼'),
-  ('date',   '約會晚宴', '🌹'),
+  ('casual', '日常休閒', 'Casual',     '👕'),
+  ('formal', '正式會議', 'Formal',     '💼'),
+  ('date',   '約會晚宴', 'Date Night', '🌹'),
 ];
 
 class OutfitScreen extends StatefulWidget {
@@ -28,14 +29,19 @@ class _OutfitScreenState extends State<OutfitScreen> {
   String _resultOccasion = '';
   String _error = '';
 
-  (String, String, String) get _currentOccasion =>
+  bool get _isEn => widget.language == 'en';
+
+  // (id, zhName, enName, emoji)
+  (String, String, String, String) get _currentOccasion =>
       _occasions.firstWhere((o) => o.$1 == _occasion,
           orElse: () => _occasions.first);
 
   Future<void> _fetch() async {
     final input = _controller.text.trim();
     if (input.isEmpty) {
-      setState(() => _error = '請填寫您的個人資料！');
+      setState(() => _error = _isEn
+          ? 'Please fill in your personal details!'
+          : '請填寫您的個人資料！');
       return;
     }
     setState(() {
@@ -44,16 +50,27 @@ class _OutfitScreenState extends State<OutfitScreen> {
       _result = '';
     });
     try {
-      final label = _currentOccasion.$2;
-      final prompt =
-          '你是一位專業時尚穿搭顧問。請針對「$label」場合提供建議。\n'
-          '使用者資料：$input\n'
-          '請以繁體中文清楚列出：1.整體風格概述 2.上衣建議 3.下身建議 '
-          '4.鞋款建議 5.配件搭配 6.造型小技巧。請詳細說明搭配原因，讓造型具備層次感。';
+      final occasionLabel =
+          _isEn ? _currentOccasion.$3 : _currentOccasion.$2;
+      final String prompt;
+      if (_isEn) {
+        prompt =
+            'You are a professional fashion stylist. Please provide outfit suggestions for a "$occasionLabel" occasion.\n'
+            'User profile: $input\n'
+            'Please clearly list in English: 1. Overall style overview 2. Top suggestions 3. Bottom suggestions '
+            '4. Footwear suggestions 5. Accessory pairing 6. Styling tips. '
+            'Please explain the reasons for each suggestion in detail to create a layered look.';
+      } else {
+        prompt =
+            '你是一位專業時尚穿搭顧問。請針對「$occasionLabel」場合提供建議。\n'
+            '使用者資料：$input\n'
+            '請以繁體中文清楚列出：1.整體風格概述 2.上衣建議 3.下身建議 '
+            '4.鞋款建議 5.配件搭配 6.造型小技巧。請詳細說明搭配原因，讓造型具備層次感。';
+      }
       final text = await GeminiService.ask(prompt);
       setState(() {
         _result = text;
-        _resultOccasion = label;
+        _resultOccasion = occasionLabel;
       });
     } catch (e) {
       setState(() => _error = e.toString());
@@ -85,14 +102,16 @@ class _OutfitScreenState extends State<OutfitScreen> {
               name: 'outfit_card.png',
             ),
           ],
-          text: '我的穿搭建議 ✨ by 星座穿搭顧問',
+          text: _isEn
+              ? 'My Outfit Suggestions ✨ by Horoscope Advisor'
+              : '我的穿搭建議 ✨ by 星座穿搭顧問',
         ),
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('分享失敗：$e'),
+            content: Text(_isEn ? 'Share failed: $e' : '分享失敗：$e'),
             backgroundColor: const Color(0xFF3B1F6B),
           ),
         );
@@ -128,9 +147,9 @@ class _OutfitScreenState extends State<OutfitScreen> {
                     colors: [Color(0xFF7C3AED), Color(0xFFC026D3)],
                   ),
                 ),
-                child: const Text(
-                  '✦ 穿搭建議',
-                  style: TextStyle(
+                child: Text(
+                  _isEn ? '✦ Outfit Advice' : '✦ 穿搭建議',
+                  style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: Colors.white),
@@ -138,14 +157,14 @@ class _OutfitScreenState extends State<OutfitScreen> {
               ),
               const SizedBox(width: 10),
               Text(
-                '場合：$_resultOccasion',
+                '${_isEn ? "Occasion" : "場合"}：$_resultOccasion',
                 style: const TextStyle(
                     fontSize: 13, color: Color(0x99FFFFFF)),
               ),
               const Spacer(),
-              const Text(
-                '✨ 星座穿搭顧問',
-                style: TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
+              Text(
+                _isEn ? '✨ Horoscope Advisor' : '✨ 星座穿搭顧問',
+                style: const TextStyle(fontSize: 11, color: Color(0x66FFFFFF)),
               ),
             ],
           ),
@@ -213,26 +232,29 @@ class _OutfitScreenState extends State<OutfitScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          const Text(
-            '✨ 星座穿搭顧問',
-            style: TextStyle(
+          Text(
+            _isEn ? '✨ Outfit Advisor' : '✨ 星座穿搭顧問',
+            style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
-            '告訴我你的身高、體重、性別、星座、幸運色、喜好顏色，讓 我 幫你搭配！',
+            _isEn
+                ? 'Tell me your height, weight, gender, zodiac sign, lucky color, and style preferences!'
+                : '告訴我你的身高、體重、性別、星座、幸運色、喜好顏色，讓我幫你搭配！',
             style: TextStyle(
                 fontSize: 13, color: Colors.white.withValues(alpha: 0.5)),
           ),
           const SizedBox(height: 24),
 
-          _sectionLabel('選擇場合'),
+          _sectionLabel(_isEn ? 'Occasion' : '選擇場合'),
           Row(
             children: _occasions.map((o) {
               final active = o.$1 == _occasion;
               final isLast = o.$1 == _occasions.last.$1;
+              final displayName = _isEn ? o.$3 : o.$2;
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: isLast ? 0 : 8),
@@ -264,11 +286,11 @@ class _OutfitScreenState extends State<OutfitScreen> {
                       ),
                       child: Column(
                         children: [
-                          Text(o.$3,
+                          Text(o.$4,
                               style: const TextStyle(fontSize: 22)),
                           const SizedBox(height: 4),
                           Text(
-                            o.$2,
+                            displayName,
                             style: TextStyle(
                               fontSize: 13,
                               color: active
@@ -278,6 +300,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
                                   ? FontWeight.w600
                                   : FontWeight.normal,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
@@ -289,7 +312,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
           ),
           const SizedBox(height: 20),
 
-          _sectionLabel('個人資料'),
+          _sectionLabel(_isEn ? 'Your Profile' : '個人資料'),
           Container(
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.07),
@@ -304,8 +327,9 @@ class _OutfitScreenState extends State<OutfitScreen> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(14),
-                hintText:
-                    '例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色，喜歡深色系，體型偏瘦...',
+                hintText: _isEn
+                    ? 'e.g. Height: 5\'9", Weight: 154lbs, Gender: Male, Sign: Pisces, Lucky color: Sky blue, Prefer dark tones, Slim build...'
+                    : '例如：身高:174.5cm，體重:70kg，性別:男，星座:雙魚座，幸運色:天藍色，喜歡深色系，體型偏瘦...',
                 hintStyle: TextStyle(
                     color: Colors.white.withValues(alpha: 0.3),
                     fontSize: 14),
@@ -315,7 +339,9 @@ class _OutfitScreenState extends State<OutfitScreen> {
           const SizedBox(height: 20),
 
           _GradientButton(
-            text: _loading ? '⏳ 正在為你穿搭中...' : '💫 幫我穿搭',
+            text: _loading
+                ? (_isEn ? '⏳ Styling you...' : '⏳ 正在為你穿搭中...')
+                : (_isEn ? '💫 Style Me' : '💫 幫我穿搭'),
             disabled: _loading,
             colors: const [
               Color(0xFF7C3AED),
@@ -347,9 +373,9 @@ class _OutfitScreenState extends State<OutfitScreen> {
                   gradient: const LinearGradient(
                       colors: [Color(0xFF7C3AED), Color(0xFFC026D3)]),
                 ),
-                child: const Text(
-                  '✦ 穿搭建議',
-                  style: TextStyle(
+                child: Text(
+                  _isEn ? '✦ Outfit Advice' : '✦ 穿搭建議',
+                  style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white),
@@ -357,7 +383,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                '場合：$_resultOccasion',
+                '${_isEn ? "Occasion" : "場合"}：$_resultOccasion',
                 style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.5)),
@@ -402,7 +428,9 @@ class _OutfitScreenState extends State<OutfitScreen> {
             ),
             const SizedBox(height: 12),
             _GradientButton(
-              text: _sharing ? '⏳ 準備分享中...' : '📤 分享穿搭卡片',
+              text: _sharing
+                  ? (_isEn ? '⏳ Preparing...' : '⏳ 準備分享中...')
+                  : (_isEn ? '📤 Share Outfit Card' : '📤 分享穿搭卡片'),
               disabled: _sharing,
               colors: const [
                 Color(0xFF4F46E5),
