@@ -15,7 +15,7 @@ const ZODIACS = [
   { id: 'pisces',      label: '雙魚座' },
 ];
 
-function buildPrompt(label) {
+function buildPromptZh(label) {
   return `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢，並嚴格以下方 JSON 格式回傳，不要加任何多餘文字或 markdown：
 {
   "overall": "今日運勢總評（2-3句）",
@@ -24,6 +24,18 @@ function buildPrompt(label) {
   "love": "愛情運（1-2句）",
   "career": "事業運（1-2句）",
   "health": "健康運（1-2句）"
+}`;
+}
+
+function buildPromptEn(label) {
+  return `You are a professional astrologer. Please provide today's horoscope for ${label} and respond strictly in the following JSON format, with no extra text or markdown:
+{
+  "overall": "Overall fortune for today (2-3 sentences)",
+  "luckyColor": "Lucky color",
+  "luckyNumber": "Lucky number",
+  "love": "Love fortune (1-2 sentences)",
+  "career": "Career fortune (1-2 sentences)",
+  "health": "Health fortune (1-2 sentences)"
 }`;
 }
 
@@ -67,20 +79,27 @@ module.exports = async function handler(req, res) {
   const results = [];
   const errors = [];
 
+  const langs = [
+    { code: 'zh', buildPrompt: (label) => buildPromptZh(label) },
+    { code: 'en', buildPrompt: (label) => buildPromptEn(label) },
+  ];
+
   for (const zodiac of ZODIACS) {
-    try {
-      const content = await callGemini(buildPrompt(zodiac.label));
-      const { error } = await supabase
-        .from('daily_horoscopes')
-        .upsert(
-          { zodiac_sign: zodiac.id, content_json: content, date: today },
-          { onConflict: 'zodiac_sign,date' }
-        );
-      if (error) throw error;
-      results.push(zodiac.id);
-      await new Promise(r => setTimeout(r, 500));
-    } catch (err) {
-      errors.push({ zodiac: zodiac.id, error: err.message });
+    for (const lang of langs) {
+      try {
+        const content = await callGemini(lang.buildPrompt(zodiac.label));
+        const { error } = await supabase
+          .from('daily_horoscopes')
+          .upsert(
+            { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
+            { onConflict: 'zodiac_sign,date,lang' }
+          );
+        if (error) throw error;
+        results.push(`${zodiac.id}(${lang.code})`);
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        errors.push({ zodiac: zodiac.id, lang: lang.code, error: err.message });
+      }
     }
   }
 
@@ -88,6 +107,6 @@ module.exports = async function handler(req, res) {
     date: today,
     success: results,
     errors,
-    message: `完成 ${results.length}/12 個星座`,
+    message: `完成 ${results.length}/24 個星座語言組合`,
   });
 };
