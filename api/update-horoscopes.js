@@ -62,6 +62,7 @@ async function callGemini(prompt) {
 }
 
 module.exports = async function handler(req, res) {
+  try {
   const secret = req.headers['x-cron-secret'] || req.query.secret;
   if (secret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -90,7 +91,10 @@ module.exports = async function handler(req, res) {
           { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
           { onConflict: 'zodiac_sign,date,lang' }
         );
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Error:', error);
+        throw error;
+      }
       return `${zodiac.id}(${lang.code})`;
     })
   );
@@ -116,4 +120,8 @@ module.exports = async function handler(req, res) {
     errors,
     message: `完成 ${results.length}/24 個星座語言組合`,
   });
+  } catch (err) {
+    console.error('Handler Error:', err);
+    return res.status(500).json({ error: err.message });
+  }
 };
