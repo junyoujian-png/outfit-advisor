@@ -29,6 +29,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
   String _result = '';
   String _resultOccasion = '';
   String _error = '';
+  InterstitialAd? _interstitialAd;
 
   bool get _isEn => widget.language == 'en';
 
@@ -36,6 +37,47 @@ class _OutfitScreenState extends State<OutfitScreen> {
   (String, String, String, String) get _currentOccasion =>
       _occasions.firstWhere((o) => o.$1 == _occasion,
           orElse: () => _occasions.first);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterstitialAd();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              _interstitialAd = null;
+              _loadInterstitialAd();
+              _fetch();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              _interstitialAd = null;
+              _loadInterstitialAd();
+              _fetch();
+            },
+          );
+        },
+        onAdFailedToLoad: (_) => _interstitialAd = null,
+      ),
+    );
+  }
+
+  Future<void> _onStyleMeTap() async {
+    if (_interstitialAd != null) {
+      await _interstitialAd!.show();
+    } else {
+      _fetch();
+    }
+  }
 
   Future<void> _fetch() async {
     final input = _controller.text.trim();
@@ -222,6 +264,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _interstitialAd?.dispose();
     super.dispose();
   }
 
@@ -349,7 +392,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
               Color(0xFF9333EA),
               Color(0xFFC026D3),
             ],
-            onTap: _fetch,
+            onTap: _onStyleMeTap,
           ),
           const SizedBox(height: 12),
           const Center(child: _BannerAdWidget()),
