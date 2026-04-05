@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'fortune_screen.dart';
@@ -15,6 +16,7 @@ void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await MobileAds.instance.initialize();
       await Supabase.initialize(
         url: 'https://xgqspvqpmvousjkyznal.supabase.co',
         anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),

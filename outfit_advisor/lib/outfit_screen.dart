@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
@@ -350,6 +351,8 @@ class _OutfitScreenState extends State<OutfitScreen> {
             ],
             onTap: _fetch,
           ),
+          const SizedBox(height: 12),
+          const Center(child: _BannerAdWidget()),
 
           if (_loading) ...[
             const SizedBox(height: 28),
@@ -458,6 +461,47 @@ class _OutfitScreenState extends State<OutfitScreen> {
           ),
         ),
       );
+}
+
+class _BannerAdWidget extends StatefulWidget {
+  const _BannerAdWidget();
+  @override
+  State<_BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<_BannerAdWidget> {
+  BannerAd? _ad;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ad = BannerAd(
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() => _loaded = true),
+        onAdFailedToLoad: (ad, error) => ad.dispose(),
+      ),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _ad?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _ad == null) return const SizedBox.shrink();
+    return SizedBox(
+      width: _ad!.size.width.toDouble(),
+      height: _ad!.size.height.toDouble(),
+      child: AdWidget(ad: _ad!),
+    );
+  }
 }
 
 class _GradientButton extends StatelessWidget {
