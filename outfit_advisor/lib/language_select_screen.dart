@@ -60,7 +60,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
                 ),
                 const SizedBox(height: 48),
                 _LangOption(
-                  emoji: '🇹🇼',
+                  emoji: '🇭🇰',
                   label: '繁體中文',
                   sublabel: 'Traditional Chinese',
                   selected: _selected == 'zh',

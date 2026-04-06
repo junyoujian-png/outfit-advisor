@@ -135,7 +135,7 @@ class _HomeShellState extends State<_HomeShell> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          isEn ? '🇺🇸' : '🇹🇼',
+                          isEn ? '🇺🇸' : '🇭🇰',
                           style: const TextStyle(fontSize: 14),
                         ),
                         const SizedBox(width: 4),
