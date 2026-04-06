@@ -109,7 +109,14 @@ module.exports = async function handler(req, res) {
     })
   );
 
-  const settled = await Promise.allSettled(tasks.map((t) => t()));
+  const settled = [];
+  for (let i = 0; i < tasks.length; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 300));
+    settled.push(await tasks[i]().then(
+      (value) => ({ status: 'fulfilled', value }),
+      (reason) => ({ status: 'rejected', reason }),
+    ));
+  }
 
   const results = [];
   const errors = [];
