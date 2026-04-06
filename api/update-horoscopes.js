@@ -16,27 +16,17 @@ const ZODIACS = [
 ];
 
 function buildPromptZh(label) {
-  return `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢，並嚴格以下方 JSON 格式回傳，不要加任何多餘文字或 markdown：
-{
-  "overall": "今日運勢總評（2-3句）",
-  "luckyColor": "幸運色",
-  "luckyNumber": "幸運數字",
-  "love": "愛情運（1-2句）",
-  "career": "事業運（1-2句）",
-  "health": "健康運（1-2句）"
-}`;
+  return `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢。
+重要規則：只回傳純 JSON，不要加任何說明文字、markdown 符號或 \`\`\`。
+回傳格式如下（直接輸出 JSON，不要其他內容）：
+{"overall":"今日運勢總評（2-3句）","luckyColor":"幸運色","luckyNumber":"幸運數字","love":"愛情運（1-2句）","career":"事業運（1-2句）","health":"健康運（1-2句）"}`;
 }
 
 function buildPromptEn(label) {
-  return `You are a professional astrologer. Please provide today's horoscope for ${label} and respond strictly in the following JSON format, with no extra text or markdown:
-{
-  "overall": "Overall fortune for today (2-3 sentences)",
-  "luckyColor": "Lucky color",
-  "luckyNumber": "Lucky number",
-  "love": "Love fortune (1-2 sentences)",
-  "career": "Career fortune (1-2 sentences)",
-  "health": "Health fortune (1-2 sentences)"
-}`;
+  return `You are a professional astrologer. Provide today's horoscope for ${label} in English.
+Important rules: Return ONLY raw JSON, no explanations, no markdown, no \`\`\` code blocks.
+Output format (output JSON directly, nothing else):
+{"overall":"Overall fortune for today (2-3 sentences in English)","luckyColor":"Lucky color in English","luckyNumber":"Lucky number","love":"Love fortune (1-2 sentences in English)","career":"Career fortune (1-2 sentences in English)","health":"Health fortune (1-2 sentences in English)"}`;
 }
 
 async function callGroq(prompt) {
@@ -52,14 +42,25 @@ async function callGroq(prompt) {
     body: JSON.stringify({
       model: 'llama-3.1-8b-instant',
       messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+      temperature: 0.7,
     }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error('Groq API 錯誤: ' + JSON.stringify(data));
-  const text = data?.choices?.[0]?.message?.content || '';
+
+  const text = data?.choices?.[0]?.message?.content?.trim() || '';
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('無效 JSON，原始回應: ' + text.slice(0, 200));
-  return JSON.parse(match[0]);
+  if (!match) {
+    console.error('Groq 回應非 JSON，finish_reason:', data?.choices?.[0]?.finish_reason, '內容:', text.slice(0, 300));
+    throw new Error(`非 JSON 回應 (finish_reason: ${data?.choices?.[0]?.finish_reason}): ${text.slice(0, 200)}`);
+  }
+  try {
+    return JSON.parse(match[0]);
+  } catch (e) {
+    console.error('JSON 解析失敗，原始內容:', match[0].slice(0, 300));
+    throw new Error(`JSON 解析失敗: ${e.message} | 原始: ${match[0].slice(0, 200)}`);
+  }
 }
 
 module.exports = async function handler(req, res) {
