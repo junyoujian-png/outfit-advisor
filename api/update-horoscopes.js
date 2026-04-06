@@ -39,23 +39,24 @@ function buildPromptEn(label) {
 }`;
 }
 
-async function callGemini(prompt) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY 環境變數未設定');
+async function callGroq(prompt) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error('GROQ_API_KEY 環境變數未設定');
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    }
-  );
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
   const data = await res.json();
-  if (!res.ok) throw new Error('Gemini API 錯誤: ' + JSON.stringify(data));
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  if (!res.ok) throw new Error('Groq API 錯誤: ' + JSON.stringify(data));
+  const text = data?.choices?.[0]?.message?.content || '';
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error('無效 JSON，原始回應: ' + text.slice(0, 200));
   return JSON.parse(match[0]);
@@ -92,7 +93,7 @@ module.exports = async function handler(req, res) {
 
   const tasks = ZODIACS.flatMap((zodiac) =>
     langs.map((lang) => async () => {
-      const content = await callGemini(lang.buildPrompt(zodiac.label));
+      const content = await callGroq(lang.buildPrompt(zodiac.label));
       const { error } = await supabase
         .from('daily_horoscopes')
         .upsert(

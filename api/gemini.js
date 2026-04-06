@@ -12,35 +12,36 @@ module.exports = async function handler(req, res) {
   }
 
   const { prompt } = req.body;
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Vercel 環境變數 GEMINI_API_KEY 未設定！' });
+    return res.status(500).json({ error: 'Vercel 環境變數 GROQ_API_KEY 未設定！' });
   }
 
   const keyPrefix = apiKey.substring(0, 10) + '...';
 
   try {
-    // 🚀 使用強大的 Gemini 2.5 Flash 正式版
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(url, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({ 
-        error: `[金鑰: ${keyPrefix}] Google 報錯: ${data?.error?.message}` 
+      return res.status(500).json({
+        error: `[金鑰: ${keyPrefix}] Groq 報錯: ${data?.error?.message}`,
       });
     }
 
-    return res.status(200).json({ text: data.candidates[0].content.parts[0].text });
+    return res.status(200).json({ text: data.choices[0].message.content });
 
   } catch (error) {
     return res.status(500).json({ error: `連線錯誤: ${error.message}` });
