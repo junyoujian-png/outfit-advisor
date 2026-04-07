@@ -109,9 +109,10 @@ module.exports = async function handler(req, res) {
     })
   );
 
+  const delay = langFilter ? 500 : 1000;
   const settled = [];
   for (let i = 0; i < tasks.length; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, 1000));
+    if (i > 0) await new Promise((r) => setTimeout(r, delay));
     settled.push(await tasks[i]().then(
       (value) => ({ status: 'fulfilled', value }),
       (reason) => ({ status: 'rejected', reason }),
