@@ -111,7 +111,7 @@ module.exports = async function handler(req, res) {
 
   const settled = [];
   for (let i = 0; i < tasks.length; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, 300));
+    if (i > 0) await new Promise((r) => setTimeout(r, 1000));
     settled.push(await tasks[i]().then(
       (value) => ({ status: 'fulfilled', value }),
       (reason) => ({ status: 'rejected', reason }),
