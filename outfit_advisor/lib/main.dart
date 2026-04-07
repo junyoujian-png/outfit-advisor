@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,6 +18,11 @@ void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      if (Platform.isIOS) {
+        try {
+          await AppTrackingTransparency.requestTrackingAuthorization();
+        } catch (_) {}
+      }
       await MobileAds.instance.initialize();
       await Supabase.initialize(
         url: 'https://xgqspvqpmvousjkyznal.supabase.co',
