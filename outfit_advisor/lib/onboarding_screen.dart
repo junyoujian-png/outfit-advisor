@@ -13,7 +13,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  bool get _isEn => widget.initialLanguage == 'en';
+  bool get _isEn {
+    if (widget.initialLanguage != null) {
+      return widget.initialLanguage == 'en';
+    }
+    // fallback：偵測手機系統語系
+    final locale = WidgetsBinding.instance.platformDispatcher.locale;
+    return locale.languageCode != 'zh';
+  }
 
   static const _pages = [
     _PageData(
