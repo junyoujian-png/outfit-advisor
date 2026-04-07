@@ -109,7 +109,7 @@ module.exports = async function handler(req, res) {
     })
   );
 
-  const delay = langFilter ? 500 : 1000;
+  const delay = langFilter ? 600 : 1000;
   const settled = [];
   for (let i = 0; i < tasks.length; i++) {
     if (i > 0) await new Promise((r) => setTimeout(r, delay));
