@@ -8,11 +8,11 @@ import 'gemini_service.dart';
 import 'report_dialog.dart';
 import 'sound_service.dart';
 
-const _bannerAdUnitId = Platform.isIOS
+String get _bannerAdUnitId => Platform.isIOS
     ? 'ca-app-pub-3940256099942544/2934735716'
     : 'ca-app-pub-3940256099942544/6300978111';
 
-const _interstitialAdUnitId = Platform.isIOS
+String get _interstitialAdUnitId => Platform.isIOS
     ? 'ca-app-pub-3940256099942544/4411468910'
     : 'ca-app-pub-3940256099942544/1033173712';
 
@@ -490,6 +490,17 @@ class _OutfitScreenState extends State<OutfitScreen> {
                       color: Colors.white.withValues(alpha: 0.9)),
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _isEn
+                  ? '💡 Content is AI-generated for entertainment only.'
+                  : '💡 內容由 AI 生成，僅供娛樂參考。',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.35),
+                  height: 1.5),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             _GradientButton(

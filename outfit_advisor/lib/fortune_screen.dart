@@ -8,7 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'report_dialog.dart';
 import 'sound_service.dart';
 
-const _bannerAdUnitId = Platform.isIOS
+String get _bannerAdUnitId => Platform.isIOS
     ? 'ca-app-pub-3940256099942544/2934735716'
     : 'ca-app-pub-3940256099942544/6300978111';
 
@@ -471,6 +471,17 @@ class _FortuneResult extends StatelessWidget {
                   label: isEn ? '🌿 Health' : '🌿 健康運',
                   text: fortune['health'] ?? '')),
         ]),
+        const SizedBox(height: 12),
+        Text(
+          isEn
+              ? '💡 Content is AI-generated for entertainment only.'
+              : '💡 內容由 AI 生成，僅供娛樂參考。',
+          style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.35),
+              height: 1.5),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

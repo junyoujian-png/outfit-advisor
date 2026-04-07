@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'about_screen.dart';
 import 'fortune_screen.dart';
+import 'onboarding_screen.dart';
 import 'outfit_screen.dart';
 import 'language_select_screen.dart';
 
@@ -31,7 +32,11 @@ void main() {
       );
       final prefs = await SharedPreferences.getInstance();
       final savedLang = prefs.getString('language');
-      runApp(OutfitAdvisorApp(initialLanguage: savedLang));
+      final onboardingDone = prefs.getBool('onboarding_done') ?? false;
+      runApp(OutfitAdvisorApp(
+        initialLanguage: savedLang,
+        onboardingDone: onboardingDone,
+      ));
     },
     (error, stack) {
       debugPrint('Uncaught error: $error\n$stack');
@@ -40,8 +45,13 @@ void main() {
 }
 
 class OutfitAdvisorApp extends StatelessWidget {
-  const OutfitAdvisorApp({super.key, required this.initialLanguage});
+  const OutfitAdvisorApp({
+    super.key,
+    required this.initialLanguage,
+    required this.onboardingDone,
+  });
   final String? initialLanguage;
+  final bool onboardingDone;
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +69,15 @@ class OutfitAdvisorApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFF1A1A2E),
       ),
-      initialRoute: initialLanguage == null ? '/language' : '/home',
+      initialRoute: !onboardingDone
+          ? '/onboarding'
+          : (initialLanguage == null ? '/language' : '/home'),
       onGenerateRoute: (settings) {
+        if (settings.name == '/onboarding') {
+          return MaterialPageRoute(
+            builder: (_) => OnboardingScreen(initialLanguage: initialLanguage),
+          );
+        }
         if (settings.name == '/language') {
           return MaterialPageRoute(
             builder: (_) => const LanguageSelectScreen(),
