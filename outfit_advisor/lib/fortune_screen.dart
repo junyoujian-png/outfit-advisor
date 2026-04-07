@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -6,6 +7,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'report_dialog.dart';
 import 'sound_service.dart';
+
+const _bannerAdUnitId = Platform.isIOS
+    ? 'ca-app-pub-3940256099942544/2934735716'
+    : 'ca-app-pub-3940256099942544/6300978111';
 
 // (id, zhName, enName, emoji)
 const _zodiacs = [
@@ -642,7 +647,7 @@ class _BannerAdWidgetState extends State<_BannerAdWidget> {
   void initState() {
     super.initState();
     _ad = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      adUnitId: _bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(

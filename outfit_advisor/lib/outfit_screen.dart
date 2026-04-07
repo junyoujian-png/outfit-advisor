@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -6,6 +7,14 @@ import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
 import 'report_dialog.dart';
 import 'sound_service.dart';
+
+const _bannerAdUnitId = Platform.isIOS
+    ? 'ca-app-pub-3940256099942544/2934735716'
+    : 'ca-app-pub-3940256099942544/6300978111';
+
+const _interstitialAdUnitId = Platform.isIOS
+    ? 'ca-app-pub-3940256099942544/4411468910'
+    : 'ca-app-pub-3940256099942544/1033173712';
 
 // (id, zhName, enName, emoji)
 const _occasions = [
@@ -47,7 +56,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      adUnitId: _interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -530,7 +539,7 @@ class _BannerAdWidgetState extends State<_BannerAdWidget> {
   void initState() {
     super.initState();
     _ad = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      adUnitId: _bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
