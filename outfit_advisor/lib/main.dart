@@ -5,6 +5,7 @@ import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'about_screen.dart';
 import 'fortune_screen.dart';
 import 'outfit_screen.dart';
 import 'language_select_screen.dart';
@@ -107,6 +108,7 @@ class _HomeShellState extends State<_HomeShell> {
     final pages = <Widget>[
       FortuneScreen(language: _language),
       OutfitScreen(language: _language),
+      AboutScreen(language: _language),
     ];
 
     return Scaffold(
@@ -187,6 +189,10 @@ class _HomeShellState extends State<_HomeShell> {
             BottomNavigationBarItem(
               icon: const Text('✨', style: TextStyle(fontSize: 22)),
               label: isEn ? 'Outfit' : '穿搭建議',
+            ),
+            BottomNavigationBarItem(
+              icon: const Text('ℹ️', style: TextStyle(fontSize: 22)),
+              label: isEn ? 'About' : '關於',
             ),
           ],
         ),
