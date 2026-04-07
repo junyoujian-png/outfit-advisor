@@ -4,6 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'gemini_service.dart';
+import 'report_dialog.dart';
 import 'sound_service.dart';
 
 // (id, zhName, enName, emoji)
@@ -433,6 +434,15 @@ class _OutfitScreenState extends State<OutfitScreen> {
                 style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.5)),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => showReportDialog(context, isEn: _isEn, source: 'outfit'),
+                child: Text(
+                  '🚩',
+                  style: TextStyle(
+                      fontSize: 16, color: Colors.white.withValues(alpha: 0.45)),
+                ),
               ),
             ]),
             const SizedBox(height: 12),

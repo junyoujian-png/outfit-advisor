@@ -4,6 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'report_dialog.dart';
 import 'sound_service.dart';
 
 // (id, zhName, enName, emoji)
@@ -413,6 +414,15 @@ class _FortuneResult extends StatelessWidget {
             '$emoji $label',
             style: TextStyle(
                 fontSize: 13, color: Colors.white.withValues(alpha: 0.6)),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => showReportDialog(context, isEn: isEn, source: 'fortune'),
+            child: Text(
+              '🚩',
+              style: TextStyle(
+                  fontSize: 16, color: Colors.white.withValues(alpha: 0.45)),
+            ),
           ),
         ]),
         const SizedBox(height: 12),
