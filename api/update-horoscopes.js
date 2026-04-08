@@ -18,6 +18,7 @@ const ZODIACS = [
 function buildPromptZh(label) {
   return `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢。
 重要規則：只回傳純 JSON，不要加任何說明文字、markdown 符號或 \`\`\`。
+幸運色必須從以下顏色中選擇，且12個星座的幸運色不可重複：赤紅、橙黃、金黃、草綠、翠綠、天藍、寶藍、靛紫、紫羅蘭、粉紅、玫瑰紅、珊瑚、棕褐、銀白、乳白。
 回傳格式如下（直接輸出 JSON，不要其他內容）：
 {"overall":"今日運勢總評（2-3句）","luckyColor":"幸運色（必須用文字名稱，例如：天藍色、金黃色，不可用 hex 色碼）","luckyNumber":"幸運數字","love":"愛情運（1-2句）","career":"事業運（1-2句）","health":"健康運（1-2句）"}`;
 }
@@ -25,6 +26,7 @@ function buildPromptZh(label) {
 function buildPromptEn(label) {
   return `You are a professional astrologer. Provide today's horoscope for ${label} in English.
 Important rules: Return ONLY raw JSON, no explanations, no markdown, no \`\`\` code blocks.
+The lucky color must be chosen from the following list, and no two zodiac signs should share the same color: Crimson, Orange, Gold, Lime Green, Emerald, Sky Blue, Royal Blue, Indigo, Violet, Pink, Rose Red, Coral, Brown, Silver, Ivory.
 Output format (output JSON directly, nothing else):
 {"overall":"Overall fortune for today (2-3 sentences in English)","luckyColor":"Lucky color as a color name in English (e.g. Sky Blue, Golden Yellow) — never use hex codes","luckyNumber":"Lucky number","love":"Love fortune (1-2 sentences in English)","career":"Career fortune (1-2 sentences in English)","health":"Health fortune (1-2 sentences in English)"}`;
 }
