@@ -32,6 +32,7 @@ function buildPromptEn(label, usedColors = []) {
     : 'Lucky color must be a color name in English (no hex codes). Feel free to be creative with color choices.';
   return `You are a professional astrologer. Provide today's horoscope for ${label} in English.
 Important rules: Return ONLY raw JSON, no explanations, no markdown, no \`\`\` code blocks.
+You must respond ONLY in English. Do not use any Chinese characters. All fields including overall, love, career, health, luckyColor must be written in English only.
 ${colorRule}
 Output format (output JSON directly, nothing else):
 {"overall":"Overall fortune for today (2-3 sentences in English)","luckyColor":"Lucky color as a color name in English (e.g. Sky Blue, Golden Yellow) — never use hex codes","luckyNumber":"Lucky number","love":"Love fortune (1-2 sentences in English)","career":"Career fortune (1-2 sentences in English)","health":"Health fortune (1-2 sentences in English)"}`;
