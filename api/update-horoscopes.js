@@ -101,7 +101,7 @@ module.exports = async function handler(req, res) {
   }
   const total = ZODIACS.length * langs.length;
 
-  const delay = langFilter ? 800 : 1000;
+  const delay = 1000;
   const results = [];
   const errors = [];
   let callCount = 0;
