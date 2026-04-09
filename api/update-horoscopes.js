@@ -15,18 +15,24 @@ const ZODIACS = [
   { id: 'pisces',      label: '雙魚座' },
 ];
 
-function buildPromptZh(label) {
+function buildPromptZh(label, usedColors = []) {
+  const colorRule = usedColors.length > 0
+    ? `幸運色必須用中文顏色名稱（不可用 hex 色碼）。已使用的幸運色：${usedColors.join('、')}，請選擇一個不在此列表中的顏色。`
+    : '幸運色必須用中文顏色名稱（不可用 hex 色碼），請自由發揮創意選擇各種顏色。';
   return `你是一位專業星座運勢占卜師。請為「${label}」提供今日運勢。
 重要規則：只回傳純 JSON，不要加任何說明文字、markdown 符號或 \`\`\`。
-幸運色必須用中文顏色名稱（不可用 hex 色碼），12個星座的幸運色不可重複，請自由發揮創意選擇各種顏色。
+${colorRule}
 回傳格式如下（直接輸出 JSON，不要其他內容）：
 {"overall":"今日運勢總評（2-3句）","luckyColor":"幸運色（必須用文字名稱，例如：天藍色、金黃色，不可用 hex 色碼）","luckyNumber":"幸運數字","love":"愛情運（1-2句）","career":"事業運（1-2句）","health":"健康運（1-2句）"}`;
 }
 
-function buildPromptEn(label) {
+function buildPromptEn(label, usedColors = []) {
+  const colorRule = usedColors.length > 0
+    ? `Lucky color must be a color name in English (no hex codes). Already used lucky colors: ${usedColors.join(', ')}. Please choose a color not in this list.`
+    : 'Lucky color must be a color name in English (no hex codes). Feel free to be creative with color choices.';
   return `You are a professional astrologer. Provide today's horoscope for ${label} in English.
 Important rules: Return ONLY raw JSON, no explanations, no markdown, no \`\`\` code blocks.
-Lucky color must be a color name in English (no hex codes), and all 12 zodiac signs must have different lucky colors. Feel free to be creative with color choices.
+${colorRule}
 Output format (output JSON directly, nothing else):
 {"overall":"Overall fortune for today (2-3 sentences in English)","luckyColor":"Lucky color as a color name in English (e.g. Sky Blue, Golden Yellow) — never use hex codes","luckyNumber":"Lucky number","love":"Love fortune (1-2 sentences in English)","career":"Career fortune (1-2 sentences in English)","health":"Health fortune (1-2 sentences in English)"}`;
 }
@@ -82,8 +88,8 @@ module.exports = async function handler(req, res) {
     .split('T')[0];
 
   const allLangs = [
-    { code: 'zh', buildPrompt: (label) => buildPromptZh(label) },
-    { code: 'en', buildPrompt: (label) => buildPromptEn(label) },
+    { code: 'zh', buildPrompt: (label, usedColors) => buildPromptZh(label, usedColors) },
+    { code: 'en', buildPrompt: (label, usedColors) => buildPromptEn(label, usedColors) },
   ];
   const langFilter = req.query.lang;
   const langs = langFilter
@@ -94,43 +100,34 @@ module.exports = async function handler(req, res) {
   }
   const total = ZODIACS.length * langs.length;
 
-  const tasks = ZODIACS.flatMap((zodiac) =>
-    langs.map((lang) => async () => {
-      const content = await callGroq(lang.buildPrompt(zodiac.label));
-      const { error } = await supabase
-        .from('daily_horoscopes')
-        .upsert(
-          { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
-          { onConflict: 'zodiac_sign,date,lang' }
-        );
-      if (error) {
-        console.error('Supabase Error:', error);
-        throw error;
-      }
-      return `${zodiac.id}(${lang.code})`;
-    })
-  );
-
   const delay = langFilter ? 600 : 1000;
-  const settled = [];
-  for (let i = 0; i < tasks.length; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, delay));
-    settled.push(await tasks[i]().then(
-      (value) => ({ status: 'fulfilled', value }),
-      (reason) => ({ status: 'rejected', reason }),
-    ));
-  }
-
   const results = [];
   const errors = [];
-  for (let i = 0; i < settled.length; i++) {
-    const r = settled[i];
-    if (r.status === 'fulfilled') {
-      results.push(r.value);
-    } else {
-      const zodiac = ZODIACS[Math.floor(i / langs.length)];
-      const lang = langs[i % langs.length];
-      errors.push({ zodiac: zodiac.id, lang: lang.code, error: r.reason?.message ?? String(r.reason) });
+  let callCount = 0;
+
+  for (const lang of langs) {
+    const usedColors = [];
+    for (const zodiac of ZODIACS) {
+      if (callCount > 0) await new Promise((r) => setTimeout(r, delay));
+      callCount++;
+      try {
+        const prompt = lang.buildPrompt(zodiac.label, usedColors);
+        const content = await callGroq(prompt);
+        if (content.luckyColor) usedColors.push(content.luckyColor);
+        const { error } = await supabase
+          .from('daily_horoscopes')
+          .upsert(
+            { zodiac_sign: zodiac.id, content_json: content, date: today, lang: lang.code },
+            { onConflict: 'zodiac_sign,date,lang' }
+          );
+        if (error) {
+          console.error('Supabase Error:', error);
+          throw error;
+        }
+        results.push(`${zodiac.id}(${lang.code})`);
+      } catch (reason) {
+        errors.push({ zodiac: zodiac.id, lang: lang.code, error: reason?.message ?? String(reason) });
+      }
     }
   }
 
