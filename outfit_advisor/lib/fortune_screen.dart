@@ -8,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'report_dialog.dart';
 import 'sound_service.dart';
 
+const bool enableAds = bool.fromEnvironment('ENABLE_ADS', defaultValue: true);
+
 String get _bannerAdUnitId => Platform.isIOS
     ? 'ca-app-pub-3940256099942544/2934735716'
     : 'ca-app-pub-3940256099942544/6300978111';
@@ -342,7 +344,7 @@ class _FortuneScreenState extends State<FortuneScreen> {
             onTap: _fetch,
           ),
           const SizedBox(height: 12),
-          const Center(child: _BannerAdWidget()),
+          if (enableAds) const Center(child: _BannerAdWidget()),
 
           if (_loading) ...[
             const SizedBox(height: 28),

@@ -11,6 +11,8 @@ import 'onboarding_screen.dart';
 import 'outfit_screen.dart';
 import 'language_select_screen.dart';
 
+const bool enableAds = bool.fromEnvironment('ENABLE_ADS', defaultValue: true);
+
 void main() {
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
@@ -25,7 +27,7 @@ void main() {
           await AppTrackingTransparency.requestTrackingAuthorization();
         } catch (_) {}
       }
-      await MobileAds.instance.initialize();
+      if (enableAds) await MobileAds.instance.initialize();
       await Supabase.initialize(
         url: 'https://xgqspvqpmvousjkyznal.supabase.co',
         anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
