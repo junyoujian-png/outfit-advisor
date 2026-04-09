@@ -71,6 +71,8 @@ class _FortuneScreenState extends State<FortuneScreen> {
           .single();
 
       // ignore: avoid_print
+      print('🔍 查詢日期: $today, 語言: $langCode');
+      // ignore: avoid_print
       print('🔥 語言: $langCode, 資料: $row');
 
       final content = row['content_json'];
