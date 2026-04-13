@@ -1,7 +1,6 @@
 workflows:
   default-workflow:
     name: Default Workflow
-    working_directory: outfit_advisor
     environment:
       flutter: stable
       xcode: latest
@@ -9,13 +8,17 @@ workflows:
         SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
     scripts:
       - name: Get Flutter packages
-        script: flutter pub get
+        script: |
+          cd outfit_advisor
+          flutter pub get
       - name: Build iOS
         script: |
+          cd outfit_advisor
           flutter build ios --release --no-codesign \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
       - name: Build Android
         script: |
+          cd outfit_advisor
           flutter build apk --release \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
             --dart-define=ENABLE_ADS=false
