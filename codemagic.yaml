@@ -4,8 +4,13 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+      groups:
+        - ios_signing
       vars:
         SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.junyoujian.zodiacadvisor
     scripts:
       - name: Get Flutter packages
         script: |
@@ -14,7 +19,7 @@ workflows:
       - name: Build iOS
         script: |
           cd outfit_advisor
-          flutter build ios --release --no-codesign \
+          flutter build ipa --release \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
       - name: Build Android
         script: |
@@ -23,5 +28,11 @@ workflows:
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
             --dart-define=ENABLE_ADS=false
     artifacts:
-      - outfit_advisor/build/ios/iphoneos/*.app
+      - outfit_advisor/build/ios/ipa/*.ipa
       - outfit_advisor/build/app/outputs/flutter-apk/*.apk
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
