@@ -6,12 +6,18 @@ workflows:
       xcode: latest
       groups:
         - ios_signing
-      vars:
-        SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.junyoujian.zodiacadvisor
     scripts:
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
+            --type IOS_APP_STORE \
+            --create
+      - name: Add certs to keychain
+        script: keychain add-certificates
+      - name: Use profiles
+        script: xcode-project use-profiles
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
