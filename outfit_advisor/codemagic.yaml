@@ -8,20 +8,16 @@ workflows:
         SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
     scripts:
       - name: Get Flutter packages
-        script: |
-          cd outfit_advisor
-          flutter pub get
+        script: flutter pub get
       - name: Build iOS
         script: |
-          cd outfit_advisor
           flutter build ios --release --no-codesign \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
       - name: Build Android
         script: |
-          cd outfit_advisor
           flutter build apk --release \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
             --dart-define=ENABLE_ADS=false
     artifacts:
-      - outfit_advisor/build/ios/iphoneos/*.app
-      - outfit_advisor/build/app/outputs/flutter-apk/*.apk
+      - build/ios/iphoneos/*.app
+      - build/app/outputs/flutter-apk/*.apk
