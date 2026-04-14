@@ -19,6 +19,9 @@ workflows:
         script: |
           app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
             --type IOS_APP_STORE \
+            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
+            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --private-key "$(printf '%s' $APP_STORE_CONNECT_PRIVATE_KEY)" \
             --create
       - name: Use profiles
         script: xcode-project use-profiles
