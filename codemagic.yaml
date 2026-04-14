@@ -12,7 +12,7 @@ workflows:
       - name: Add certificate to keychain
         script: |
           echo $CERTIFICATE_PRIVATE_KEY | base64 --decode > /tmp/certificate.p12
-          keychain add-certificates --certificate /tmp/certificate.p12
+          keychain add-certificates --certificate /tmp/certificate.p12 --certificate-password codemagic
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
