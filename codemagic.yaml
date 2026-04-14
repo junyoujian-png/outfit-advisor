@@ -9,13 +9,15 @@ workflows:
     scripts:
       - name: Set up keychain
         script: keychain initialize
+      - name: Add certificate to keychain
+        script: |
+          echo $CERTIFICATE_PRIVATE_KEY | base64 --decode > /tmp/certificate.p12
+          keychain add-certificates --certificate /tmp/certificate.p12
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
             --type IOS_APP_STORE \
             --create
-      - name: Add certs to keychain
-        script: keychain add-certificates
       - name: Use profiles
         script: xcode-project use-profiles
       - name: Get Flutter packages
