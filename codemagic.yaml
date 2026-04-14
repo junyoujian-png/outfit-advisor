@@ -11,10 +11,8 @@ workflows:
         script: keychain initialize
       - name: Add certificate to keychain
         script: |
-          echo "Certificate length: ${#CERTIFICATE_PRIVATE_KEY}"
           printf '%s' "$CERTIFICATE_PRIVATE_KEY" | base64 -D -o /tmp/certificate.p12
-          file /tmp/certificate.p12
-          security import /tmp/certificate.p12 -k ~/Library/Keychains/login.keychain-db -P "codemagic" -T /usr/bin/codesign
+          security import /tmp/certificate.p12 -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
