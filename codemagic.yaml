@@ -21,8 +21,7 @@ workflows:
           app-store-connect profiles list \
             --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
             --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            --private-key @file:/tmp/api_key.p8 \
-            --profile-type IOS_APP_STORE
+            --private-key @file:/tmp/api_key.p8
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
