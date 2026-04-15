@@ -11,7 +11,7 @@ workflows:
         script: keychain initialize
       - name: Add certificate to keychain
         script: |
-          printf '%s' "$CERTIFICATE_PRIVATE_KEY" | base64 -D -o /tmp/certificate.p12
+          printf '%s' "$CM_CERTIFICATE" | base64 -D -o /tmp/certificate.p12
           security unlock-keychain -p "" ~/Library/Keychains/login.keychain-db
           security import /tmp/certificate.p12 -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/login.keychain-db
