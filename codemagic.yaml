@@ -25,20 +25,12 @@ workflows:
           security import /tmp/cert.pem -k "$KEYCHAIN" -A
           security import /tmp/key.pem -k "$KEYCHAIN" -A
           security find-identity -v -p codesigning
-      - name: Download provisioning profile
+      - name: Install provisioning profile
         script: |
-          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
-          PROFILE_ID=$(app-store-connect profiles list \
-            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
-            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            --private-key @file:/tmp/api_key.p8 \
-            --json | python3 -c "import sys,json; profiles=json.load(sys.stdin); print(profiles[0]['id'])")
-          app-store-connect profiles get $PROFILE_ID \
-            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
-            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            --private-key @file:/tmp/api_key.p8 \
-            --save
-          xcode-project use-profiles
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          printf '%s' "$PROVISIONING_PROFILE" | base64 -D -o ~/Library/MobileDevice/Provisioning\ Profiles/ZodiacAdvisor.mobileprovision
+          echo "Profile installed:"
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
