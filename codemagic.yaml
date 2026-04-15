@@ -14,11 +14,11 @@ workflows:
           printf '%s' "$CM_CERTIFICATE" | base64 -D -o /tmp/certificate.p12
           KEYCHAIN=$(ls ~/Library/codemagic-cli-tools/keychains/*.keychain-db | head -1)
           echo "Using keychain: $KEYCHAIN"
-          security list-keychains -d user -s "$KEYCHAIN"
-          security default-keychain -s "$KEYCHAIN"
-          security unlock-keychain -p "codemagic-cli-tools" "$KEYCHAIN"
-          security import /tmp/certificate.p12 -k "$KEYCHAIN" -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "codemagic-cli-tools" "$KEYCHAIN"
+          for pwd in "" "codemagic" "codemagic-cli-tools" "insecure" "test"; do
+            echo "Trying password: '$pwd'"
+            security unlock-keychain -p "$pwd" "$KEYCHAIN" && echo "SUCCESS: $pwd" && break
+          done
+          security import /tmp/certificate.p12 -k "$KEYCHAIN" -T /usr/bin/codesign
       - name: Download provisioning profile
         script: |
           printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
