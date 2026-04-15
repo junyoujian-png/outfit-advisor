@@ -15,17 +15,14 @@ workflows:
           security unlock-keychain -p "" ~/Library/Keychains/login.keychain-db
           security import /tmp/certificate.p12 -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/login.keychain-db
-      - name: Fetch signing files
+      - name: Download provisioning profile
         script: |
           printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
-          app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
-            --type IOS_APP_STORE \
+          app-store-connect profiles list \
             --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
             --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
             --private-key @file:/tmp/api_key.p8 \
-            --create
-      - name: Use profiles
-        script: xcode-project use-profiles
+            --profile-type IOS_APP_STORE
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
