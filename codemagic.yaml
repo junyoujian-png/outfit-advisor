@@ -22,6 +22,17 @@ workflows:
             --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
             --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
             --private-key @file:/tmp/api_key.p8
+      - name: Fetch signing files
+        script: |
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
+          app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
+            --type IOS_APP_STORE \
+            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
+            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --private-key @file:/tmp/api_key.p8 \
+            --create
+      - name: Use profiles
+        script: xcode-project use-profiles
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
