@@ -11,19 +11,14 @@ workflows:
         script: |
           keychain initialize
           printf '%s' "$CM_CERTIFICATE" | base64 -D -o /tmp/certificate.p12
-          pip3 install pyopenssl --quiet
           python3 << 'EOF'
-          import subprocess, os
-          from OpenSSL.crypto import load_pkcs12, FILETYPE_PEM
+          from cryptography.hazmat.primitives.serialization import pkcs12, Encoding, PrivateFormat, NoEncryption
           with open('/tmp/certificate.p12', 'rb') as f:
-              p12 = load_pkcs12(f.read(), b'')
-          cert_pem = '/tmp/cert.pem'
-          key_pem = '/tmp/key.pem'
-          from OpenSSL.crypto import dump_certificate, dump_privatekey
-          with open(cert_pem, 'wb') as f:
-              f.write(dump_certificate(FILETYPE_PEM, p12.get_certificate()))
-          with open(key_pem, 'wb') as f:
-              f.write(dump_privatekey(FILETYPE_PEM, p12.get_privatekey()))
+              private_key, certificate, chain = pkcs12.load_key_and_certificates(f.read(), b'')
+          with open('/tmp/cert.pem', 'wb') as f:
+              f.write(certificate.public_bytes(Encoding.PEM))
+          with open('/tmp/key.pem', 'wb') as f:
+              f.write(private_key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()))
           print("Extracted cert and key successfully")
           EOF
           KEYCHAIN=$(ls ~/Library/codemagic-cli-tools/keychains/*.keychain-db | head -1)
