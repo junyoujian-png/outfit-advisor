@@ -18,21 +18,17 @@ workflows:
       - name: Download provisioning profile
         script: |
           printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
-          app-store-connect profiles list \
-            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
-            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            --private-key @file:/tmp/api_key.p8
-      - name: Fetch signing files
-        script: |
-          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
-          app-store-connect fetch-signing-files com.junyoujian.zodiacadvisor \
-            --type IOS_APP_STORE \
+          PROFILE_ID=$(app-store-connect profiles list \
             --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
             --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
             --private-key @file:/tmp/api_key.p8 \
-            --create
-      - name: Use profiles
-        script: xcode-project use-profiles
+            --json | python3 -c "import sys,json; profiles=json.load(sys.stdin); print(profiles[0]['id'])")
+          app-store-connect profiles get $PROFILE_ID \
+            --issuer-id $APP_STORE_CONNECT_ISSUER_ID \
+            --key-id $APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --private-key @file:/tmp/api_key.p8 \
+            --save
+          xcode-project use-profiles
       - name: Get Flutter packages
         script: |
           cd outfit_advisor
