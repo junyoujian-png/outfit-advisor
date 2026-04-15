@@ -12,7 +12,11 @@ workflows:
       - name: Add certificate to keychain
         script: |
           printf '%s' "$CM_CERTIFICATE" | base64 -D -o /tmp/certificate.p12
-          keychain add-certificates --certificate /tmp/certificate.p12
+          KEYCHAIN=$(ls ~/Library/codemagic-cli-tools/keychains/*.keychain-db | head -1)
+          echo "Using keychain: $KEYCHAIN"
+          security unlock-keychain -p "" "$KEYCHAIN"
+          security import /tmp/certificate.p12 -k "$KEYCHAIN" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN"
       - name: Download provisioning profile
         script: |
           printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
