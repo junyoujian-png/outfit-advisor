@@ -7,16 +7,12 @@ workflows:
       groups:
         - ios_signing
     scripts:
-      - name: Set up keychain
-        script: keychain initialize
-      - name: Add certificate to keychain
+      - name: Set up keychain and add certificate
         script: |
+          keychain initialize
           printf '%s' "$CM_CERTIFICATE" | base64 -D -o /tmp/certificate.p12
-          KEYCHAIN=$(ls ~/Library/codemagic-cli-tools/keychains/*.keychain-db | head -1)
-          security unlock-keychain -p "" "$KEYCHAIN"
-          security import /tmp/certificate.p12 -k "$KEYCHAIN" -A -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" "$KEYCHAIN"
-          security find-identity -v -p codesigning "$KEYCHAIN"
+          keychain add-certificates --certificate /tmp/certificate.p12 --certificate-password ""
+          security find-identity -v -p codesigning
       - name: Download provisioning profile
         script: |
           printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/api_key.p8
